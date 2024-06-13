@@ -171,7 +171,7 @@ export default class levelDesignTool extends cc.Component {
   }
   startDragging(eventData) {
     if (this.id == 28) {
-      if (this.grassMatrix[eventData.x][eventData.y] == 2) {
+      if (this.grassMatrix[eventData.x][eventData.y] >-2) {
         this.startPoint.x = eventData.x;
         this.startPoint.y = eventData.y;
       }
@@ -184,6 +184,7 @@ export default class levelDesignTool extends cc.Component {
   endDragging(eventData) {
     if (this.startPoint.y == -1 || this.startPoint.x == -1 || this.id != 28)
       return;
+    let temp=this.grassMatrix[this.startPoint.x][this.startPoint.y];
     //check all tile is grass 2
     let endPoint: Point = { x: eventData.x, y: eventData.y };
     console.log(this.startPoint)
@@ -197,7 +198,7 @@ export default class levelDesignTool extends cc.Component {
     }
     for (let i = this.startPoint.x; i <= endPoint.x; i++) {
       for (let j = this.startPoint.y; j <= endPoint.y; j++) {
-        if (this.grassMatrix[i][j] == 1) {
+        if (this.grassMatrix[i][j] !=temp) {
           return
         }
       }
