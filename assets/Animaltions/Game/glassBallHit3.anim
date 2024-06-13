@@ -1,0 +1,61 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "glassBallHit3",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1.0166666666666666,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "7e335fd0-d8d3-4a22-9e06-9b7dbfaf71ba"
+            }
+          },
+          {
+            "frame": 0.16666666666666666,
+            "value": {
+              "__uuid__": "56f6fe0a-f243-4e60-a2d8-465cb0892c05"
+            }
+          },
+          {
+            "frame": 0.31666666666666665,
+            "value": {
+              "__uuid__": "587f3b01-42ff-4b56-81fd-d742e3d561a5"
+            }
+          },
+          {
+            "frame": 0.4666666666666667,
+            "value": {
+              "__uuid__": "a50ec771-a265-45e3-815d-8a95e32eab72"
+            }
+          },
+          {
+            "frame": 0.6666666666666666,
+            "value": {
+              "__uuid__": "97ea7c7d-e325-45f5-b0be-e637fa0a31ca"
+            }
+          },
+          {
+            "frame": 0.8333333333333334,
+            "value": {
+              "__uuid__": "e9567ea3-6b30-42b4-9804-fd8c41d5d7b3"
+            }
+          },
+          {
+            "frame": 1,
+            "value": {
+              "__uuid__": "d4c8983e-4357-47ef-afb9-10997b970a31"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

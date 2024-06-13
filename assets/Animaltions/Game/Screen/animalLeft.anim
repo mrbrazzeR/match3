@@ -1,0 +1,61 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "animalLeft",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1.5166666666666666,
+  "sample": 60,
+  "speed": 2,
+  "wrapMode": 2,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "02e03204-6bae-4398-bf0d-4e502f9656e2"
+            }
+          },
+          {
+            "frame": 0.25,
+            "value": {
+              "__uuid__": "348e41b7-350a-45fd-a897-392c586c7459"
+            }
+          },
+          {
+            "frame": 0.5,
+            "value": {
+              "__uuid__": "2a095d68-1661-4d6b-9268-05daedebd75c"
+            }
+          },
+          {
+            "frame": 0.7333333333333333,
+            "value": {
+              "__uuid__": "1af0c280-c2b4-4075-9854-bb230f399f6f"
+            }
+          },
+          {
+            "frame": 1,
+            "value": {
+              "__uuid__": "a98fd4f4-d408-4a26-a975-4692dbab45fc"
+            }
+          },
+          {
+            "frame": 1.25,
+            "value": {
+              "__uuid__": "42602788-46d0-4274-82fc-1f490f4751cd"
+            }
+          },
+          {
+            "frame": 1.5,
+            "value": {
+              "__uuid__": "db24feff-8bb3-4167-a3d4-21cf5bcb32ab"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

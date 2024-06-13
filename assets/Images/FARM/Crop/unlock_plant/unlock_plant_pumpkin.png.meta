@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "f23a86aa-dd1d-4cbc-854c-2933f0362e3c",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 112,
+  "height": 114,
+  "platformSettings": {},
+  "subMetas": {
+    "unlock_plant_pumpkin": {
+      "ver": "1.0.6",
+      "uuid": "79374da7-a017-45e6-81f3-a74fe4be59a1",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "f23a86aa-dd1d-4cbc-854c-2933f0362e3c",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 2,
+      "trimY": 9,
+      "width": 108,
+      "height": 96,
+      "rawWidth": 112,
+      "rawHeight": 114,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

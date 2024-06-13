@@ -1,0 +1,61 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "rockStoneBreak",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.85,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "7d2bf955-b3cf-4cdd-b21b-60d620440770"
+            }
+          },
+          {
+            "frame": 0.13333333333333333,
+            "value": {
+              "__uuid__": "9765f4b6-6bca-4b70-9a99-7e96deb7f1f3"
+            }
+          },
+          {
+            "frame": 0.26666666666666666,
+            "value": {
+              "__uuid__": "97f10ce2-0cf4-4012-b3a0-46392a78555a"
+            }
+          },
+          {
+            "frame": 0.4166666666666667,
+            "value": {
+              "__uuid__": "2fb25acb-a111-4ef9-9aa0-9b843ac60e01"
+            }
+          },
+          {
+            "frame": 0.55,
+            "value": {
+              "__uuid__": "c7649af5-ef29-4390-bf6c-aa735cd09ae4"
+            }
+          },
+          {
+            "frame": 0.6833333333333333,
+            "value": {
+              "__uuid__": "32924a17-bb03-4598-9b99-6f942924fd2a"
+            }
+          },
+          {
+            "frame": 0.8333333333333334,
+            "value": {
+              "__uuid__": "2f283df6-3c30-4d7a-b8f4-dbdb45299d2d"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

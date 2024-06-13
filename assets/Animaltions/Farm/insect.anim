@@ -1,0 +1,43 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "insect",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1.35,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "5f692372-d9b4-4e3c-985c-ddf97130f9ca"
+            }
+          },
+          {
+            "frame": 0.4166666666666667,
+            "value": {
+              "__uuid__": "a5119488-e5ac-4a7f-b116-2fcef3b3b665"
+            }
+          },
+          {
+            "frame": 0.8333333333333334,
+            "value": {
+              "__uuid__": "1e60a16c-bf75-4770-8f7d-cc936fee8fa9"
+            }
+          },
+          {
+            "frame": 1.3333333333333333,
+            "value": {
+              "__uuid__": "ddbfe5a9-13bb-41fc-9e9d-296d86d58a82"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

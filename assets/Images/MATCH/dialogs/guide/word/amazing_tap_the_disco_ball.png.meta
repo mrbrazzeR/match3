@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "632e3139-9afd-4692-ad45-d71ca2b43ea3",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 547,
+  "height": 76,
+  "platformSettings": {},
+  "subMetas": {
+    "amazing_tap_the_disco_ball": {
+      "ver": "1.0.6",
+      "uuid": "bffabe92-036e-42d6-935d-2bcffd4bd4d4",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "632e3139-9afd-4692-ad45-d71ca2b43ea3",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 547,
+      "height": 76,
+      "rawWidth": 547,
+      "rawHeight": 76,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

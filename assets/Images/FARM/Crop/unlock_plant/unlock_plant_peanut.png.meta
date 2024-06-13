@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "676cb7fb-3d84-4461-ad24-d9a74d7d6b10",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 112,
+  "height": 114,
+  "platformSettings": {},
+  "subMetas": {
+    "unlock_plant_peanut": {
+      "ver": "1.0.6",
+      "uuid": "45fb460c-8f3a-42eb-8dc0-08efafec51c6",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "676cb7fb-3d84-4461-ad24-d9a74d7d6b10",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -1,
+      "offsetY": 0,
+      "trimX": 8,
+      "trimY": 9,
+      "width": 94,
+      "height": 96,
+      "rawWidth": 112,
+      "rawHeight": 114,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

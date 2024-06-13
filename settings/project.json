@@ -1,0 +1,64 @@
+{
+  "group-list": [
+    "block",
+    "rock",
+    "tool",
+    "Ui"
+  ],
+  "collision-matrix": [
+    [
+      false,
+      true,
+      true
+    ],
+    [
+      true,
+      false,
+      true,
+      false
+    ],
+    [
+      true,
+      true,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false
+    ]
+  ],
+  "excluded-modules": [
+    "3D Physics/Builtin"
+  ],
+  "preview-port": 7456,
+  "design-resolution-width": 1920,
+  "design-resolution-height": 1080,
+  "fit-width": false,
+  "fit-height": true,
+  "use-project-simulator-setting": true,
+  "simulator-orientation": true,
+  "use-customize-simulator": true,
+  "simulator-resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "clear-simulator-cache": true,
+  "facebook": {
+    "enable": false,
+    "appID": "",
+    "live": {
+      "enable": false
+    },
+    "audience": {
+      "enable": false
+    }
+  },
+  "last-module-event-record-time": 1717053388041,
+  "start-scene": "20bcfc7b-a523-4660-873b-e626b4f23c99",
+  "migrate-history": [
+    "cloud-function"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "squirrelsRun",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1.0166666666666666,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 2,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0.016666666666666666,
+            "value": {
+              "__uuid__": "95353a03-0052-4f0c-8daa-43c24848ce0f"
+            }
+          },
+          {
+            "frame": 0.06666666666666667,
+            "value": {
+              "__uuid__": "5e0a4184-7e59-427c-85d6-49f2260d3398"
+            }
+          },
+          {
+            "frame": 0.13333333333333333,
+            "value": {
+              "__uuid__": "81dfe699-2837-4952-a84e-73cbcd6a534d"
+            }
+          },
+          {
+            "frame": 0.25,
+            "value": {
+              "__uuid__": "f87f2a36-e22f-4a99-a8d0-46657e0e5a27"
+            }
+          },
+          {
+            "frame": 0.26666666666666666,
+            "value": {
+              "__uuid__": "7e9af7a6-d8ee-443d-a29a-bea1181db8c8"
+            }
+          },
+          {
+            "frame": 0.4166666666666667,
+            "value": {
+              "__uuid__": "5e0a4184-7e59-427c-85d6-49f2260d3398"
+            }
+          },
+          {
+            "frame": 0.55,
+            "value": {
+              "__uuid__": "d1d6d1e8-9a6a-4f17-881d-e4ee2eb7d426"
+            }
+          },
+          {
+            "frame": 0.6666666666666666,
+            "value": {
+              "__uuid__": "f87f2a36-e22f-4a99-a8d0-46657e0e5a27"
+            }
+          },
+          {
+            "frame": 0.75,
+            "value": {
+              "__uuid__": "7e9af7a6-d8ee-443d-a29a-bea1181db8c8"
+            }
+          },
+          {
+            "frame": 1,
+            "value": {
+              "__uuid__": "d1d6d1e8-9a6a-4f17-881d-e4ee2eb7d426"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

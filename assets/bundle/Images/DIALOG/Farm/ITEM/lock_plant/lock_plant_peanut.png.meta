@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "78b1edd4-3592-4526-a59f-cf3d16e5297e",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 112,
+  "height": 114,
+  "platformSettings": {},
+  "subMetas": {
+    "lock_plant_peanut": {
+      "ver": "1.0.6",
+      "uuid": "67534bdf-5264-4a20-8aeb-5a5086fee5aa",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "78b1edd4-3592-4526-a59f-cf3d16e5297e",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -1,
+      "offsetY": 0,
+      "trimX": 8,
+      "trimY": 9,
+      "width": 94,
+      "height": 96,
+      "rawWidth": 112,
+      "rawHeight": 114,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

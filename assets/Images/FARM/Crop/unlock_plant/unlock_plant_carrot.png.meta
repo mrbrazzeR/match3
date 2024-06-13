@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "a300e7c7-05dc-4a04-832e-96170d86ce11",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 112,
+  "height": 114,
+  "platformSettings": {},
+  "subMetas": {
+    "unlock_plant_carrot": {
+      "ver": "1.0.6",
+      "uuid": "4c0e0a18-5f5f-45b8-b3af-6f98a49cf355",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "a300e7c7-05dc-4a04-832e-96170d86ce11",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -0.5,
+      "offsetY": 0,
+      "trimX": 2,
+      "trimY": 3,
+      "width": 107,
+      "height": 108,
+      "rawWidth": 112,
+      "rawHeight": 114,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

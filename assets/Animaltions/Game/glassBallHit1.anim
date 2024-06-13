@@ -1,0 +1,55 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "glassBallHit1",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.7,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "bbb11bbe-201e-4aff-b8f3-d2543308bd7a"
+            }
+          },
+          {
+            "frame": 0.13333333333333333,
+            "value": {
+              "__uuid__": "c05c2920-e235-4828-b33b-6d9ce6907673"
+            }
+          },
+          {
+            "frame": 0.26666666666666666,
+            "value": {
+              "__uuid__": "35b7a8d8-307b-4132-b66e-dc611f48e99d"
+            }
+          },
+          {
+            "frame": 0.4166666666666667,
+            "value": {
+              "__uuid__": "fdbeb985-2fe6-490e-90d5-4b556fe6b67a"
+            }
+          },
+          {
+            "frame": 0.55,
+            "value": {
+              "__uuid__": "f55d79ee-d3ec-454a-b459-1de82f4e25d3"
+            }
+          },
+          {
+            "frame": 0.6833333333333333,
+            "value": {
+              "__uuid__": "b763027c-5942-4fe6-a09e-de920fd8f43f"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": []
+}

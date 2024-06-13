@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "56e2ee11-ab14-4435-968d-090276b825ea",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 440,
+  "height": 395,
+  "platformSettings": {},
+  "subMetas": {
+    "levelUp_farm_icon": {
+      "ver": "1.0.6",
+      "uuid": "f1ee6982-4d52-4525-92e2-833ed33e56e4",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "56e2ee11-ab14-4435-968d-090276b825ea",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 10.5,
+      "offsetY": -39,
+      "trimX": 84,
+      "trimY": 119,
+      "width": 293,
+      "height": 235,
+      "rawWidth": 440,
+      "rawHeight": 395,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
