@@ -11,12 +11,15 @@ export default class squirrelDesign extends cc.Component {
         recWidth - recHeight > 0 ? (this.node.height = recWidth * 75, this.node.width = recHeight * 75, this.node.angle = -0)
             : (this.node.width = recWidth * 75, this.node.height = recHeight * 75, this.node.angle = -90)
 
-        //kiem tra do lech:
-        let xBonus = (rec.topRight.x - rec.bottomLeft.x) * 75 / 2;
-        let yBonus = (rec.topRight.y - rec.bottomLeft.y) * 75 / 2;
         if (recWidth - recHeight > 0) {
-            this.node.setPosition(rec.bottomLeft.y * 75 + yBonus, rec.bottomLeft.x * 75)
+            this.node.setAnchorPoint(0,0)
+            this.node.setPosition(rec.bottomLeft.y * 75-75/2, rec.bottomLeft.x * 75-75/2)
+            console.log(rec.bottomLeft.x * 75, rec.bottomLeft.y * 75)
         }
-        else { this.node.setPosition(rec.bottomLeft.y * 75, rec.bottomLeft.x * 75 + xBonus) }
+        else { 
+            this.node.setAnchorPoint(1,0)
+            this.node.setPosition(rec.bottomLeft.y * 75-75/2, rec.bottomLeft.x * 75-75/2 )
+            console.log(rec.bottomLeft.y * 75, rec.bottomLeft.x * 75)
+         }
     }
 }

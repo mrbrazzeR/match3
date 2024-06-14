@@ -119,11 +119,13 @@ export default class levelDesignTool extends cc.Component {
         if (this.id >= 0 && this.id <= 10) {
           //normal block
           this.matrix[eventData.x][eventData.y] = this.id;
+          this.bubbleMatrix[eventData.x][eventData.y]=-2;
           isNormal = true;
         }
         else if (this.id >= 20 && this.id <= 39 && this.id != 38 && this.id != 28) {
           //main view block
           this.matrix[eventData.x][eventData.y] = this.id;
+          this.bubbleMatrix[eventData.x][eventData.y]=-2;
           isNormal = true;
         }
         else if (this.id == 11) {
@@ -171,24 +173,21 @@ export default class levelDesignTool extends cc.Component {
   }
   startDragging(eventData) {
     if (this.id == 28) {
-      if (this.grassMatrix[eventData.x][eventData.y] >-2) {
-        this.startPoint.x = eventData.x;
-        this.startPoint.y = eventData.y;
-      }
-      else {
-        this.startPoint.x = -1;
-        this.startPoint.y = -1;
-      }
+      this.startPoint.x = eventData.x;
+      this.startPoint.y = eventData.y;
     }
+    else {
+      this.startPoint.x = -1;
+      this.startPoint.y = -1;
+    }
+
   }
   endDragging(eventData) {
     if (this.startPoint.y == -1 || this.startPoint.x == -1 || this.id != 28)
       return;
-    let temp=this.grassMatrix[this.startPoint.x][this.startPoint.y];
+    let temp = this.grassMatrix[this.startPoint.x][this.startPoint.y];
     //check all tile is grass 2
     let endPoint: Point = { x: eventData.x, y: eventData.y };
-    console.log(this.startPoint)
-    console.log(endPoint)
     let rec: Rectangle = {
       bottomLeft: {
         x: this.startPoint.x > endPoint.x ? endPoint.x : this.startPoint.x, y: this.startPoint.y > endPoint.y ? endPoint.y : this.startPoint.y
@@ -196,20 +195,20 @@ export default class levelDesignTool extends cc.Component {
         x: this.startPoint.x > endPoint.x ? this.startPoint.x : endPoint.x, y: this.startPoint.y > endPoint.y ? this.startPoint.y : endPoint.y
       }
     }
-    for (let i = this.startPoint.x; i <= endPoint.x; i++) {
-      for (let j = this.startPoint.y; j <= endPoint.y; j++) {
-        if (this.grassMatrix[i][j] !=temp) {
-          return
+    for (let i = rec.bottomLeft.x; i <= rec.topRight.x; i++) {
+      for (let j = rec.bottomLeft.y; j <= rec.topRight.y; j++) {
+        if (this.grassMatrix[i][j] == temp || this.grassMatrix[i][j] == -2) {
+          continue;
         }
+        else
+          return;
       }
     }
+
     let sq = cc.instantiate(this.squirrel);
     this.squirrelList.push(sq)
-
-    console.log(rec)
     sq.getComponent(squirrelDesign).comfirmBearWidthAndHeight(rec);
     sq.parent = this.levelMap;
-    console.log(sq.position)
     this.squirrelSquare.push([[this.startPoint.x, this.startPoint.y], [endPoint.x, endPoint.y]])
   }
   removeSquirrel() {
@@ -247,11 +246,12 @@ export default class levelDesignTool extends cc.Component {
     let obj = {
       mapList: this.matrix,
       step: this.step.string,
-      targetList:this.targetList,
-      scoreStandard: score,
+      targetList: this.targetList,
+      hinderList:[0,0,0],
       grassList: this.grassSquare,
       stoneList: this.squirrelSquare,
-      bubbleList: this.bubbleSquare
+      bubbleList: this.bubbleSquare,
+      scoreStandard: score,
     }
     let jsonString = JSON.stringify(obj);
     jsonString = jsonString.replace(/\"/g, '')
