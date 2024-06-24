@@ -197,7 +197,7 @@ export default class levelDesignTool extends cc.Component {
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_avarta"])
             this.customBlockNodeList.push(cus)
           } else {
-            if (x + 2 > 8 || y + 2 > 8) { return }
+            if (x > 7 || y > 7) { return }
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
                 if (this.matrix[i][j] == 40) {
@@ -224,10 +224,10 @@ export default class levelDesignTool extends cc.Component {
           let count: number = +this.countingBox.string
           this.frame = this.baseFrame;
           if (size == 1) {
-            if (this.matrix[x][y] == 40)
+            if (this.matrix[x][y] == 41)
               return
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
-            this.matrix[x][y] = 40;
+            this.matrix[x][y] = 41;
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
             let cus = cc.instantiate(this.customCan);
@@ -236,17 +236,17 @@ export default class levelDesignTool extends cc.Component {
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_can"])
             this.customBlockNodeList.push(cus)
           } else {
-            if (x + 2 > 8 || y + 2 > 8) { return }
+            if (x >7 || y > 7) { return }
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
-                if (this.matrix[i][j] == 40) {
+                if (this.matrix[i][j] == 41) {
                   return
                 }
               }
             }
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
-                this.matrix[i][j] = 40
+                this.matrix[i][j] = 41
                 cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
               }
             }
@@ -379,9 +379,11 @@ export default class levelDesignTool extends cc.Component {
       bubbleList: this.bubbleSquare
     }
     let jsonString = JSON.stringify(obj);
-    jsonString = jsonString.replace(/\"/g, '')
+    const removedBackslashesString = jsonString.replace(/\"/g, '');
+    let modifiedString = removedBackslashesString.replaceAll("custom_avarta","'custom_avarta'");
+    modifiedString=modifiedString.replaceAll("custom_can","'custom_can'")
     let a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(jsonString)], { type: 'application/json' }));
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(modifiedString)], { type: 'application/json' }));
     a.download = 'data.json';
     document.body.appendChild(a);
     a.click();
