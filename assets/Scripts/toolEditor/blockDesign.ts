@@ -136,7 +136,6 @@ export default class blockDesign extends cc.Component {
     }
 
     onTouchStart() {
-        console.log(this._stoneType)
         var sprite = this.view.getComponent(cc.Sprite).spriteFrame;
         cc.systemEvent.emit('BLOCKCLICK', { id: this._stoneType, img: sprite });
     }

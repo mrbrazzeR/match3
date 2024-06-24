@@ -133,7 +133,7 @@ export default class levelDesignTool extends cc.Component {
         let isNormal = false;
         //check is lock
         if ((this.matrix[x][y] == 40 || this.matrix[x][y] == 41) && (this.id != 40 && this.id != 41)) {
-          let temp = this.customBlockList.findIndex((obj) => (obj[0][0] <= x && obj[0][1] <= y&&obj[1][0]>=x&&obj[1][1]>=y));
+          let temp = this.customBlockList.findIndex((obj) => (obj[0][0] <= x && obj[0][1] <= y && obj[1][0] >= x && obj[1][1] >= y));
           if (temp != -1) {
             let pos = this.customBlockList[temp];
             this.customBlockList.splice(temp, 1);
@@ -188,6 +188,7 @@ export default class levelDesignTool extends cc.Component {
             if (this.matrix[x][y] == 40)
               return
 
+            cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 40;
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
             let cus = cc.instantiate(this.customAvatar);
@@ -225,7 +226,7 @@ export default class levelDesignTool extends cc.Component {
           if (size == 1) {
             if (this.matrix[x][y] == 40)
               return
-
+            cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 40;
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
