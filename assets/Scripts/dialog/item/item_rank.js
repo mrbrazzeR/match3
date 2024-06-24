@@ -41,12 +41,11 @@ cc.Class({
     },
     playWithFriend(){
         var _this = this;
-        if (!Global.IS_FB_INSTANT){
+        if (!cc.director.FbManager.IS_FB_INSTANT){
             return;
         }
         cc.systemEvent.emit("LOADING_SHOW");
-        FBInstant.context
-        .createAsync(idPlayer)
+        FBInstant.context.createAsync(idPlayer)
         .then(function() {
             cc.systemEvent.emit("LOADDING_HIDE");
             gameData.isPlayWithFriend = true;

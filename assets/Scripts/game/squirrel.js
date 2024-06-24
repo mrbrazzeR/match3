@@ -1,7 +1,5 @@
-
-import i  from "../utils"
-
-import s from "../psconfig"
+import utils  from "../utils"
+import psconfig from "../psconfig"
 cc.Class({
     extends: cc.Component,
 
@@ -16,29 +14,40 @@ cc.Class({
         this.list = e
         this.comfirmBearWidthAndHeight(e)
     },
-    comfirmBearPosition: function(e) {
-        var t;
-        if (e && e.length > 0) {
-            var s = (e[1][0] + e[0][0]) / 2,
-                n = (e[1][1] + e[0][1]) / 2;
-            t = i.grid2Pos(s, n)
+    comfirmBearPosition: function(stone) {
+        var pos;
+        if (stone && stone.length > 0) {
+            var s = (stone[1][0] + stone[0][0]) / 2
+            var n = (stone[1][1] + stone[0][1]) / 2;
+            pos = utils.grid2Pos(s, n)
         }
-        return t || !1
+        if(!pos){
+            return false
+        }else{
+            return pos
+        }
     },
     comfirmBearWidthAndHeight: function(e) {
-        var t = Math.abs(e[1][0] - e[0][0]) + 1,
-            i = Math.abs(e[1][1] - e[0][1]) + 1;
-        t - i > 0 ? (this.node.height = t * s.cellSize, this.node.width = i * s.cellSize, this.node.angle = -0) : (this.node.width = t * s.cellSize, this.node.height = i * s.cellSize, this.node.angle = -90)
+        var t = Math.abs(e[1][0] - e[0][0]) + 1
+        var i = Math.abs(e[1][1] - e[0][1]) + 1;
+        t - i > 0 ? (this.node.height = t * psconfig.cellSize, this.node.width = i * psconfig.cellSize, this.node.angle = -0) : (this.node.width = t * psconfig.cellSize, this.node.height = i * psconfig.cellSize, this.node.angle = -90)
     },
     judgeBearIsHide: function(e) {
-        for (var t = this.list[0][0], i = this.list[1][0], s = this.list[0][1], n = this.list[1][1], a = !1, o = t; o <= i; o++) {
-            for (var c = s; c <= n; c++)
+        var t = this.list[0][0]
+        var i = this.list[1][0]
+        var s = this.list[0][1]
+        var n = this.list[1][1] 
+        var bool = false
+        for (var o = t; o <= i; o++) {
+            for (var c = s; c <= n; c++){
                 if (e[o][c] >= 1) {
-                    a = !0;
-                    break
-                } if (a) break
+                    bool = true;
+                    break;
+                } 
+                if (bool) break;
+            }
         }
-        return a
+        return bool;
     },
     
 });

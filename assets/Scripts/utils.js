@@ -227,28 +227,37 @@ module.exports = {
             return e.x == t.x && e.y == t.y
         })
     },
-    needRemoveList: function(e, t) {
-        var s = []
-          , n = [];
-        n.push(t);
-        var a = e[t.x][t.y];
-        if (a <= -2)
-            return s;
+    needRemoveList: function(starMatrix, pos) {
+        var result = []
+        var tmp = [];
+        tmp.push(pos);
+        var type = starMatrix[pos.x][pos.y];
+        if (type <= -2){
+            return result;
+        }
         do {
-            var o = n.pop();
-            if (o.y - 1 >= 0 && a == e[o.x][o.y - 1]) {
+            var o = tmp.pop();
+            if (o.y - 1 >= 0 && type == starMatrix[o.x][o.y - 1]) {
                 var c = cc.v2(o.x, o.y - 1);
-                this.indexOfV2(s, c) || this.indexOfV2(n, c) || n.push(c)
+                this.indexOfV2(result, c) || this.indexOfV2(tmp, c) || tmp.push(c)
             }
-            o.y + 1 < psconfig.matrixCol && a == e[o.x][o.y + 1] && (c = cc.v2(o.x, o.y + 1),
-            this.indexOfV2(s, c) || this.indexOfV2(n, c) || n.push(c)),
-            o.x - 1 >= 0 && a == e[o.x - 1][o.y] && (c = cc.v2(o.x - 1, o.y),
-            this.indexOfV2(s, c) || this.indexOfV2(n, c) || n.push(c)),
-            o.x + 1 < psconfig.matrixRow && a == e[o.x + 1][o.y] && (c = cc.v2(o.x + 1, o.y),
-            this.indexOfV2(s, c) || this.indexOfV2(n, c) || n.push(c)),
-            s.push(o)
-        } while (n.length > 0);
-        return s
+            if(o.y + 1 < psconfig.matrixCol && type == starMatrix[o.x][o.y + 1]){
+                c = cc.v2(o.x, o.y + 1)
+                this.indexOfV2(result, c) || this.indexOfV2(tmp, c) || tmp.push(c)
+            }
+            if(o.x - 1 >= 0 && type == starMatrix[o.x - 1][o.y]){
+                c = cc.v2(o.x - 1, o.y)
+                this.indexOfV2(result, c) || this.indexOfV2(tmp, c) || tmp.push(c)
+            }
+            if(o.x + 1 < psconfig.matrixRow && type == starMatrix[o.x + 1][o.y]){
+                c = cc.v2(o.x + 1, o.y)
+                this.indexOfV2(result, c) || this.indexOfV2(tmp, c) || tmp.push(c)
+            }
+            result.push(o)
+        } while (
+            tmp.length > 0
+        );
+        return result;
     },
     getScore: function(e) {
         for (var t = 0, i = 1; i <= e; i++)
@@ -479,12 +488,23 @@ module.exports = {
         return t
     },
     getBalloonClearList: function(e, t, i) {
-        for (var s = [], n = 0; n < t.length; n++)
-            for (var a = this.getItemAdjacentPos(t[n]), o = 0; o < a.length; o++) {
+        var s = []
+        for (var n = 0; n < t.length; n++){
+            var a = this.getItemAdjacentPos(t[n])
+            for (var o = 0; o < a.length; o++) {
                 var c = a[o]
-                  , r = e[c.x][c.y];
-                this.indexOfV2(t, c) || this.indexOfV2(s, c) || (23 == i && r >= i && r <= i + 2 ? s.push(c) : 29 == i && r >= i && r <= i + 7 ? s.push(c) : r == i && s.push(c))
+                var r = e[c.x][c.y];
+                if(!this.indexOfV2(t, c) && !this.indexOfV2(s, c)){  
+                    if(23 == i && r >= i && r <= i + 2){
+                        s.push(c)
+                    }else if(29 == i && r >= i && r <= i + 7){
+                        s.push(c)
+                    }else if( r == i){
+                        s.push(c)
+                    }
+                }
             }
+        }
         return s
     },
     randomGetGrid: function(e, t) {
@@ -539,18 +559,61 @@ module.exports = {
         e.y - 1 >= 0 && t[e.x][e.y - 1] >= 8 && t[e.x][e.y - 1] < 11 && (s = !0),
         s
     },
-    girdToPos: function(e, t, s) {
-        var n = s + 1.9 + .5 * psconfig.cellSize + (psconfig.cellSize + 1.9) * t
-          , a = s + 1.9 + .5 * psconfig.cellSize + (psconfig.cellSize + 1.9) * e;
-        return cc.v2(n, a)
+    girdToPos: function(i, j, add) {
+        var x = add + 1.9 + 0.5 * psconfig.cellSize + (psconfig.cellSize + 1.9) * j
+        var y = add + 1.9 + 0.5 * psconfig.cellSize + (psconfig.cellSize + 1.9) * i;
+        return cc.v2(x, y)
     },
-    judgeBounder: function(e, t) {
-        var s = [];
-        return e.y + 1 >= psconfig.matrixCol ? s[3] = 1 : -2 == t[e.x][e.y + 1] ? s[3] = 1 : s[3] = 0, e.y - 1 < 0 ? s[2] = 1 : -2 == t[e.x][e.y - 1] ? s[2] = 1 : s[2] = 0, e.x - 1 < 0 ? s[1] = 1 : -2 == t[e.x - 1][e.y] ? s[1] = 1 : s[1] = 0, e.x + 1 >= psconfig.matrixRow ? s[0] = 1 : -2 == t[e.x + 1][e.y] ? s[0] = 1 : s[0] = 0, s
+    judgeBounder: function(position, matrix) {
+        var bounds = []; 
+        // Check the bottom boundary
+        if (position.x + 1 >= psconfig.matrixRow || matrix[position.x + 1][position.y] === -2) {
+            bounds[0] = 1;
+        } else {
+            bounds[0] = 0;
+        } 
+        // Check the top boundary
+        if (position.x - 1 < 0 || matrix[position.x - 1][position.y] === -2) {
+            bounds[1] = 1;
+        } else {
+            bounds[1] = 0;
+        }
+        // Check the left boundary
+        if (position.y - 1 < 0 || matrix[position.x][position.y - 1] === -2) {
+            bounds[2] = 1;
+        } else {
+            bounds[2] = 0;
+        }
+        
+        // Check the right boundary
+        if (position.y + 1 >= psconfig.matrixCol || matrix[position.x][position.y + 1] === -2) {
+            bounds[3] = 1;
+        } else {
+            bounds[3] = 0;
+        }  
+        
+        return bounds;
     },
-    judgeAngle: function(e, t) {
-        var s = [0, 0, 0, 0];
-        return e.x - 1 >= 0 && e.y + 1 < psconfig.matrixCol && -2 != t[e.x - 1][e.y + 1] && (s[2] = 1), e.x + 1 < psconfig.matrixRow && e.y + 1 < psconfig.matrixCol && -2 != t[e.x + 1][e.y + 1] && (s[1] = 2), e.x + 1 < psconfig.matrixRow && e.y - 1 >= 0 && -2 != t[e.x + 1][e.y - 1] && (s[0] = 3), e.x - 1 >= 0 && e.y - 1 >= 0 && -2 != t[e.x - 1][e.y - 1] && (s[3] = 4), s
+    judgeAngle: function(position, matrix) {
+        var angles = [0, 0, 0, 0];
+        // Check the top-left position
+        if (position.x - 1 >= 0 && position.y + 1 < psconfig.matrixCol && matrix[position.x - 1][position.y + 1] !== -2) {
+            angles[2] = 1;
+        }
+        // Check the top-right position
+        if (position.x + 1 < psconfig.matrixRow && position.y + 1 < psconfig.matrixCol && matrix[position.x + 1][position.y + 1] !== -2) {
+            angles[1] = 2;
+        }
+        // Check the bottom-right position
+        if (position.x + 1 < psconfig.matrixRow && position.y - 1 >= 0 && matrix[position.x + 1][position.y - 1] !== -2) {
+            angles[0] = 3;
+        }
+        // Check the bottom-left position
+        if (position.x - 1 >= 0 && position.y - 1 >= 0 && matrix[position.x - 1][position.y - 1] !== -2) {
+            angles[3] = 4;
+        }
+
+        return angles;
     },
     addHinder: function(e, t, s) {
         for (var n = []; n.length < t; ) {

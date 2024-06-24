@@ -17,6 +17,7 @@ cc.Class({
         toolView: [cc.SpriteFrame],
         fire: cc.Prefab,
         item_target: cc.Prefab,
+        subList: [cc.SpriteFrame],
         targetList: [cc.SpriteFrame],
         evaluation: cc.Prefab,
         evaluationList: [cc.SpriteFrame],
@@ -211,12 +212,25 @@ cc.Class({
     },
     noticeGameTarget: function(e) {
         var t = e.worldPos
-          , i = this.node.convertToNodeSpaceAR(t)
-          , s = e.type >= 20 ? e.type - 12 : e.type
-          , n = e.index
-          , a = cc.instantiate(this.item_target);
-        38 == e.type ? a.getComponent(cc.Sprite).spriteFrame = this.targetList[18] : 39 == e.type ? a.getComponent(cc.Sprite).spriteFrame = this.targetList[19] : 37 == e.type ? a.getComponent(cc.Sprite).spriteFrame = this.targetList[20] : a.getComponent(cc.Sprite).spriteFrame = this.targetList[s],
-        a.position = i,
+        var i = this.node.convertToNodeSpaceAR(t)
+        var s = e.type >= 20 ? e.type - 12 : e.type
+        var n = e.index
+        var a = cc.instantiate(this.item_target);
+        a.getChildByName("sub").active = false
+        if( 38 == e.type){
+            a.getComponent(cc.Sprite).spriteFrame = this.targetList[18]
+        }else if(39 == e.type){
+            a.getComponent(cc.Sprite).spriteFrame = this.targetList[19]
+        }else if(37 == e.type){
+            a.getComponent(cc.Sprite).spriteFrame = this.targetList[20]
+        }else{
+            a.getComponent(cc.Sprite).spriteFrame = this.targetList[s]
+            if(e.type < 6){
+                a.getChildByName("sub").active = true
+                a.getChildByName("sub").getComponent(cc.Sprite).spriteFrame = this.subList[s]
+            }
+        }
+        a.position = i
         a.parent = this.node;
         var o = this.target.nodeList[n]
           , c = o.parent.convertToWorldSpaceAR(o.position)

@@ -1,4 +1,4 @@
-var levelResource = require("../levelResource");
+var newLevelResource = require("../newLevelResource");
 import gameData from "../gameData"
 
 cc.Class({
@@ -27,11 +27,10 @@ cc.Class({
         this.lbScore.string = 0
         this.progressBar.progress = 0
         this.scoreValue = 0
-        
-        if(gameData.bestLevel > 300){
+        if(cc.director.container.currentLevel >= 300){
             this.starStandard = [10000, 20000, 30000]
         }else{
-            this.starStandard = levelResource["lv" + gameData.bestLevel].scoreStandard
+            this.starStandard = newLevelResource[cc.director.container.currentLevel].scoreStandard
         }
 
         this.initStarView()

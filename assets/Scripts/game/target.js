@@ -7,12 +7,14 @@ cc.Class({
 
     properties: {
         viewList: [cc.SpriteFrame],
+        subView: [cc.SpriteFrame],
         nodeList: [cc.Node],
         step: cc.Label,
         hinderListView: [cc.SpriteFrame],
         gameMask: cc.Node,
         //resultTips: require("../dialog/resultTips"),
         boom_star: cc.Prefab,    
+        
     },
 
     onLoad: function() {
@@ -22,61 +24,69 @@ cc.Class({
         cc.systemEvent.on("GAMEMASK_CONTROL", this.controlGameMask, this)
     },
     resumeGameStatues: function() {
-        this.isPass = !1,
-        this.isGameEnd = !1,
+        this.isPass = false,
+        this.isGameEnd = false,
         this.initTargetNumber()
     },
     hideTargetNode: function() {
         for (var e = 0; e < this.nodeList.length; e++){
-            this.nodeList[e].active = !1
-            this.nodeList[e].getChildByName("finishIcon").active = !1
+            this.nodeList[e].active = false
+            this.nodeList[e].getChildByName("finishIcon").active = false
         }
     },
     controlGameMask: function(e) {
-        1 == e.order ? this.gameMask.active = !0 : this.gameMask.active = !1
+        1 == e.order ? this.gameMask.active = true : this.gameMask.active = false
     },
     initTargetNumber: function() {
         this.targetList = {}
     },
     updateNodeTag: function(e, t) {
-        /* e = [
-            [
-                0,
-                1
-            ],
-            [
-                1,
-                1
-            ]
-        ]
-        t = 2 */
         this.originStep = t
         this.stepCount = t
         this.tContent = e
         this.updateGameStep(this.stepCount),
         this.hideTargetNode();
-        for (var s = this.computedNodeGap(e.length, this.node, this.nodeList[0]), n = 0; n < e.length; n++) {
+        var s = this.computedNodeGap(e.length, this.node, this.nodeList[0])
+        for (var n = 0; n < e.length; n++) {
             var a = this.nodeList[n];
             a.position = cc.v2(s * (n + 1) + a.width * n + a.width / 2, 0)
-            a.active = !0
+            a.active = true
             a.name = e[n][0] + "";
-            var o = a.getChildByName("icon")
+            var icon = a.getChildByName("icon")
+            var sub = a.getChildByName("sub")
             var c = e[n][0] < 20 ? e[n][0] : e[n][0] - 20;
-            e[n][0] < 20 ? utils.changeLocalNodeTexture(o, this.viewList, c) : 38 == e[n][0] ? utils.changeLocalNodeTexture(o, this.hinderListView, 10) : 39 == e[n][0] ? utils.changeLocalNodeTexture(o, this.hinderListView, 11) : 37 == e[n][0] ? utils.changeLocalNodeTexture(o, this.hinderListView, 12) : utils.changeLocalNodeTexture(o, this.hinderListView, c),
-            this.updateTargetNumber(e[n][0], e[n][1]),
+            //e.getComponent(cc.Sprite).spriteFrame
+            sub.active = false  
+            if(e[n][0] < 20){
+                utils.changeLocalNodeTexture(icon, this.viewList, c)
+                if(e[n][0] < 6){
+                    sub.active = true
+                    utils.changeLocalNodeTexture(sub, this.subView, c)
+                }
+            }else if(e[n][0] == 38){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 10)
+            }else if(e[n][0] == 39){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 11)
+            }else if(e[n][0] == 37){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 12)
+            }else{
+                utils.changeLocalNodeTexture(icon, this.hinderListView, c)
+            }
+            this.updateTargetNumber(e[n][0], e[n][1])
             this.targetList[e[n][0] + ""] = e[n][1]
         }
     },
     updateTargetNumber: function(e, t) {
         var i = this.node.getChildByName(e + "")
-          , s = i.getChildByName("num")
-          , n = s.getComponent(cc.Label);
+        var s = i.getChildByName("num")
+        var n = s.getComponent(cc.Label);
         if (t > 0) {
             n.string = t + "",
-            s.active = !0;
+            s.active = true;
             var a = i.getActionByTag(2);
-            if (a && !a.isDone())
+            if (a && !a.isDone()){
                 return;
+            }
             var o = cc.sequence(cc.scaleTo(.2, .9), cc.scaleTo(.2, 1.1), cc.scaleTo(.2, 1));
             o.tag = 2,
             i.runAction(o);
@@ -84,8 +94,8 @@ cc.Class({
             c.parent = i,
             c.getComponent(cc.ParticleSystem).resetSystem()
         } else
-            s.active = !1,
-            i.getChildByName("finishIcon").active = !0
+            s.active = false,
+            i.getChildByName("finishIcon").active = true
     },
     updateGameStep: function(e) {
         this.step.string = e + ""
@@ -95,14 +105,18 @@ cc.Class({
     },
     countGameStep: function() {
         this.stepCount--,
-        this.stepCount > 0 ? (this.updateGameStep(this.stepCount),
-        this.isPass || 5 != this.stepCount || cc.systemEvent.emit("FIVE_STEP_TIPS")) : (this.isGameEnd = !0,
-        this.updateGameStep("0"),
-        cc.director.container.canclePlayerNotice(),
-        cc.systemEvent.emit("GAMEMASK_CONTROL", {
-            order: 1
-        }),
-        this.checkDeath())
+        this.stepCount > 0 ? (
+            this.updateGameStep(this.stepCount),
+            this.isPass || 5 != this.stepCount || cc.systemEvent.emit("FIVE_STEP_TIPS")
+        ) : (
+            this.isGameEnd = true,
+            this.updateGameStep("0"),
+            cc.director.container.canclePlayerNotice(),
+            cc.systemEvent.emit("GAMEMASK_CONTROL", {
+                order: 1
+            }),
+            this.checkDeath()
+        )
     },
     checkDeath: function() {
         this.scheduleOnce(function() {
@@ -136,14 +150,14 @@ cc.Class({
     },
     isFinishedTarget: function() {
         if (!this.isPass) {
-            var e = !0;
+            var e = true;
             for (var t in this.targetList)
                 if (this.targetList[t + ""] > 0) {
-                    e = !1;
+                    e = false;
                     break
                 }
-            e && this.stepCount >= 0 ? (this.isPass = !0,
-            this.isGameEnd = !0,
+            e && this.stepCount >= 0 ? (this.isPass = true,
+            this.isGameEnd = true,
             cc.systemEvent.emit("GAMEMASK_CONTROL", {
                 order: 1
             }),
@@ -181,19 +195,19 @@ cc.Class({
         20 != e.type && this.isFinishedTarget())
     },
     judgeType: function(e) {
-        for (var t = !1, i = 0; i < this.tContent.length; i++)
+        for (var t = false, i = 0; i < this.tContent.length; i++)
             if (25 == this.tContent[i][0]) {
                 if (e >= 23 && e <= 25) {
-                    t = !0;
+                    t = true;
                     break
                 }
             } else if (29 == this.tContent[i][0]) {
                 if (e >= 29 && e <= 36) {
-                    t = !0;
+                    t = true;
                     break
                 }
             } else if (this.tContent[i][0] == e) {
-                t = !0;
+                t = true;
                 break
             }
         return t
@@ -203,10 +217,10 @@ cc.Class({
         return !!t && t.parent.convertToWorldSpaceAR(t.position)
     },
     checkTargetAgain: function() {
-        var e = !0;
+        var e = true;
         for (var t in this.targetList)
             if (this.targetList[t + ""] > 0) {
-                e = !1;
+                e = false;
                 break
             }
         return e

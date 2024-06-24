@@ -6,6 +6,7 @@ cc.Class({
     properties: {
         nodeList: [cc.Node],
         viewList: [cc.SpriteFrame],
+        subList:[cc.SpriteFrame],
         hinderListView: [cc.SpriteFrame]
     },
 

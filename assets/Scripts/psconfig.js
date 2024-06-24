@@ -16,7 +16,8 @@ cc.Enum({
     colorCube: 29,
     ladybug: 37, 
     waterBubble: 38,
-    rockStone: 39
+    rockStone: 39,
+    customBlocks: 40
 })
 module.exports = {
     cellSize: 75,

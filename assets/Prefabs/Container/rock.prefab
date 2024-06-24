@@ -291,19 +291,19 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 0,
-      "height": 0
+      "width": 30,
+      "height": 150
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
       "x": 0.5,
-      "y": 0.5
+      "y": 0
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -39.062,
+        -35.264,
         0,
         0,
         0,
@@ -354,16 +354,16 @@
     "_stopped": false,
     "playOnLoad": true,
     "autoRemoveOnFinish": false,
-    "totalParticles": 100,
+    "totalParticles": 200,
     "duration": -1,
     "emissionRate": 200,
     "life": 0.5,
     "lifeVar": 0.2,
     "_startColor": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 19,
-      "b": 230,
+      "r": 241,
+      "g": 166,
+      "b": 6,
       "a": 103
     },
     "_startColorVar": {
@@ -377,7 +377,7 @@
       "__type__": "cc.Color",
       "r": 255,
       "g": 0,
-      "b": 255,
+      "b": 0,
       "a": 255
     },
     "_endColorVar": {
@@ -387,7 +387,7 @@
       "b": 127,
       "a": 127
     },
-    "angle": 90,
+    "angle": 180,
     "angleVar": 0,
     "startSize": 40,
     "startSizeVar": 15,
@@ -415,7 +415,7 @@
       "x": 0,
       "y": 0
     },
-    "speed": 0,
+    "speed": 250,
     "speedVar": 0,
     "tangentialAccel": 0,
     "tangentialAccelVar": 0,
@@ -434,12 +434,12 @@
   {
     "__type__": "cc.PrefabInfo",
     "root": {
-      "__id__": 7
+      "__id__": 1
     },
     "asset": {
-      "__uuid__": "7ac6c246-9124-4df5-80f9-fad44d1ffd78"
+      "__uuid__": "0eff7034-c406-4f2a-80a6-27e77af1db0d"
     },
-    "fileId": "00m3VWC1RO+YexTPrhefVe",
+    "fileId": "50FdJM+gZIOKKm7rxXWgYs",
     "sync": false
   },
   {

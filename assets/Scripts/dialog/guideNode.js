@@ -27,10 +27,10 @@ cc.Class({
 
     onLoad: function() {
         this.currentStep = -1
-        cc.systemEvent.on("EXCUTE_GUIDE_STEP", this.accordingLevelShowGuide, this)
+        /* cc.systemEvent.on("EXCUTE_GUIDE_STEP", this.accordingLevelShowGuide, this)
         cc.systemEvent.on("PLAYER_TOOL_GUIDE", this.guide_playerTool, this)
         cc.systemEvent.on("WINDMILL_SECOND_GUIDE", this.guideWindmill_again, this)
-        cc.systemEvent.on("STATUE_SECOND_GUIDE", this.guide_thirteen, this) 
+        cc.systemEvent.on("STATUE_SECOND_GUIDE", this.guide_thirteen, this)  */
     },
   
     guide_one: function() {

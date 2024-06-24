@@ -11,6 +11,8 @@ cc.Class({
         fire: cc.Prefab,
         line: cc.Prefab,
         tool_effect: cc.Prefab,
+        avarta_blocks: cc.Prefab,
+        custom_blocks: cc.Prefab,
         rotationEffect: cc.Prefab,
         balloonBoom: cc.Prefab,
         progressBar: require("./progressBar"),
@@ -45,144 +47,325 @@ cc.Class({
 
     onLoad: function() {
         cc.director.container = this
-        var e, t, i, s, n, a;
         cc.systemEvent.on("GAME_TOOL", this.handleGameTool, this),
-        cc.systemEvent.on("REMOVE_CUBES", this.removeSameColorCubeByClick, this),
-        cc.systemEvent.on("player_tool", this.handlePlayerTool, this),
-        cc.systemEvent.on("FIREINTHEHOLE", this.fireTheHole, this),
-        cc.systemEvent.on("BOXING_ANVIL", this.boxingAndAnvil, this),
-        this.stonePool = new cc.NodePool("block"),
-        this.colPool = new cc.NodePool,
-        this.firePool = new cc.NodePool("arrow"),
-        this.linePool = new cc.NodePool("line"),
-        this.rockPool = new cc.NodePool,
-        this.CubeBreakPool = new cc.NodePool,
+        cc.systemEvent.on("REMOVE_CUBES", this.removeSameColorCubeByClick, this)
+        cc.systemEvent.on("player_tool", this.handlePlayerTool, this)
+        cc.systemEvent.on("FIREINTHEHOLE", this.fireTheHole, this)
+        cc.systemEvent.on("BOXING_ANVIL", this.boxingAndAnvil, this)
+        this.stonePool = new cc.NodePool("block")
+        this.colPool = new cc.NodePool
+        this.firePool = new cc.NodePool("arrow")
+        this.linePool = new cc.NodePool("line")
+        this.rockPool = new cc.NodePool
+        this.CubeBreakPool = new cc.NodePool
         this.lineList = [];
-        for (var o = 0; o < 100; o++)
-            e = cc.instantiate(this.stone),
-            this.stonePool.put(e);
-        for (var c = 0; c < 10; c++)
-            t = cc.instantiate(this.del_col),
-            this.colPool.put(t);
-        for (var r = 0; r < 20; r++)
-            i = cc.instantiate(this.testArrow),
-            this.firePool.put(i);
-        for (var d = 0; d < 20; d++)
-            s = cc.instantiate(this.line),
-            this.linePool.put(s);
-        for (var l = 0; l < 20; l++)
-            n = cc.instantiate(this.rock),
-            this.rockPool.put(n);
-        for (var h = 0; h < 20; h++)
-            a = cc.instantiate(this.normalCubeBreak),
-            this.CubeBreakPool.put(a);
-        cc.director.getCollisionManager().enabled = !0,
-        
-        this.passIndex = !1
+        for (var o = 0; o < 100; o++){
+            var stone = cc.instantiate(this.stone)
+            this.stonePool.put(stone);
+        }
+        for (var c = 0; c < 10; c++){
+            var del_col = cc.instantiate(this.del_col)
+            this.colPool.put(del_col);
+        }
+        for (var r = 0; r < 20; r++){
+            var testArrow = cc.instantiate(this.testArrow)
+            this.firePool.put(testArrow);
+        }
+        for (var d = 0; d < 20; d++){
+            var line = cc.instantiate(this.line)
+            this.linePool.put(line);
+        }
+        for (var l = 0; l < 20; l++){
+            var rock = cc.instantiate(this.rock)
+            this.rockPool.put(rock);
+        }
+        for (var h = 0; h < 20; h++){
+            var normalCubeBreak = cc.instantiate(this.normalCubeBreak)
+            this.CubeBreakPool.put(normalCubeBreak);
+        }
+        cc.director.getCollisionManager().enabled = true
+       
+        this.passIndex = false
         this.currentLevel = 0
-        //
         this.elapsed = 0
         this.duration = 0
         this.force = 0
         this.shouldVibrate = false
-        //
+        this.customNodeList = []
     },
-
-    initStoneData: function(e, t) {
-        var n;
-        n = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
-        var a = utils.grid2Pos(e.x, e.y);
-        n.getComponent("block").initStoneView(e.x, e.y, t),
-        n.position = a,
-        this.node.addChild(n);
-        var o = utils.indexValue(e.x, e.y);
-        gameData.starSprite[o] = -2 == t ? null : n
+    
+    startNewGame: function() {
+        this.customNodeList = []
+        this.grassGround.reset()
+        this.bubbleGround.reset()     
+        if(gameData.tournamentData){
+            this.currentLevel = gameData.tournamentData.level
+        }else{      
+            this.currentLevel = gameData.bestLevel
+        }
+        cc.log("start game level: ", this.currentLevel)
+        var mapList, levelResource, step, targetList;
+        cc.game.GameMoveStatus = 0
+        cc.game.windmillCount = 0
+        this.canclePlayerNotice()
+        cc.director.isPine = 0
+        cc.director.checkLastPine = 0
+        if (this.currentLevel >= 0 &&  this.currentLevel < 300){        
+            levelResource = newLevelResource[this.currentLevel]
+            mapList = JSON.parse(JSON.stringify(levelResource.mapList))
+            gameData.starMatrix = mapList
+            this.list = levelResource.targetList
+            step = levelResource.step;
+        }else {
+            var hinderList
+            targetList = this.createRandomTargetList();
+            var hinderList = this.createHinderList(targetList)
+            var h = utils.initMatrixDataPortraitRandom()
+            var p = utils.addHinder(h, hinderList[0], -2);
+            utils.addHinder(h, hinderList[1], 20)
+            p = utils.addHinder(h, hinderList[2], 21)
+            hinderList = p
+            this.list = targetList
+            step = this.createStep()
+            this.tempStep = step
+            mapList = JSON.parse(JSON.stringify(hinderList))
+            targetListo = this.list
+            gameData.starMatrix = mapList
+            step = this.tempStep
+            levelResource = {}
+        }
+        cc.director.isMoving = false
+        this.progressBar.initProgressBar()
+        this.initContainerView(mapList)
+        this.bgPrompt.initBgPrompt(gameData.starMatrix)
+        this.target.resumeGameStatues()
+        this.target.updateNodeTag(this.list, step)
+        //////grassGround
+        var grassList = levelResource.grassList
+        var stoneList = levelResource.stoneList
+        grassList && stoneList && this.grassGround.initFunc(grassList, stoneList)
+        //////bubbleGround
+        var bubbleList = levelResource.bubbleList
+        bubbleList && this.bubbleGround.initFunc(bubbleList)
+        //////customBlocks
+        var customBlocks = levelResource.customBlocks
+        customBlocks && this.initCustomBlocks(customBlocks)
+        
+        /* gameData.bestLevel > 0 && */ this.showTipsView()
+        cc.director.dialogScript.goalDisplay.initGoalNumber(this.list)
+        cc.director.videoCount = 1
+        this.handleCanCombineTool()
+        cc.systemEvent.emit("GAMEMASK_CONTROL", {
+            order: 1
+        })
+    },
+    initCustomBlocks(customBlocks){
+        for (var i = 0; i < customBlocks.length; i++) {          
+            var data = customBlocks[i]
+            var pre;
+            if(data[3] == "custom_avarta"){
+                pre = cc.instantiate(this.avarta_blocks)      
+            }else{
+                pre = cc.instantiate(this.custom_blocks)
+            }
+            var preComp = pre.getComponent("custom_blocks");
+            preComp.initData(data);
+            var pos = preComp.comfirmCustomPosition(data);
+            pre.parent = this.node
+            pre.position = pos
+            pre.zIndex = data[0][0]
+            this.customNodeList.push(pre)
+            this.setRatioChilrenInCustom(data)
+        }
+    },
+    setRatioChilrenInCustom(data){
+        var minRow = data[0][0] //4
+        var maxRow = data[1][0] //6
+        var minCol = data[0][1] //5
+        var maxCol = data[1][1] //7
+        for(var i = minRow; i <= maxRow; i++){
+            for(var j = minCol; j <= maxCol; j++){
+                var pos = cc.v2(i,j)
+                var comp = this.getNodeBygGrid(pos);
+                if(typeof comp.bombRatio == "number"){
+                    comp.bombRatio = data[2]
+                }
+            }
+        } 
     },
     initContainerView: function(e) {
         this.reclaimNode();
-        for (var t = 0; t < psconfig.matrixRow; t++){
-            for (var i = 0; i < psconfig.matrixCol; i++) {
-                var s = cc.v2(t, i);
-                this.initStoneData(s, e[t][i])
+        for (var i = 0; i < psconfig.matrixRow; i++){
+            for (var j = 0; j < psconfig.matrixCol; j++) {
+                var s = cc.v2(i, j);
+                this.initStoneData(s, e[i][j])
             }
         }
     },
     reclaimNode: function() {
-        for (var e = this.node.children, t = e.length - 1; t >= 0; t--) {
-            var i = e[t];
-            "block" == i.name ? this.stonePool.put(i) : i.removeFromParent()
+        var e = this.node.children
+        for (var i = e.length - 1; i >= 0; i--) {
+            var item = e[i];
+            if(item.name == "block"){
+                this.stonePool.put(item)
+            }else{
+                item.removeFromParent()
+            }
         }
     },
-    removeSameColorCubeByClick: function(e) {
-        this.canclePlayerNotice();
-        var t, i = e.detail, s = JSON.parse(JSON.stringify(i));
-        this.hinderResponseCubesBreak(s, this)
-        if (i.length >= 5){
-            this.cubesToGameTool(s);
+    initStoneData: function(e, t) {
+        var item;
+        if(this.stonePool.size() > 0){
+            item = this.stonePool.get()
+        }else{
+            item = cc.instantiate(this.stone);
         }
-        else {
-            for (; i.length > 0; ){
-                t = i.pop(),
-                this.normalCubeBreakAnimation(t),
-                this.removeBlock(t);
-            }
+        var pos = utils.grid2Pos(e.x, e.y);
+        item.getComponent("block").initStoneView(e.x, e.y, t)
+        item.position = pos
+        this.node.addChild(item);
+        var o = utils.indexValue(e.x, e.y);
+        if(t == -2){
+            gameData.starSprite[o] = null
+        }else{
+            gameData.starSprite[o] = item
+        }
+    },
+    
+    removeSameColorCubeByClick: function(needRemoveList) {
+        this.canclePlayerNotice();
+        var detail = needRemoveList.detail
+        var jsonDetail = JSON.parse(JSON.stringify(detail));
+        this.hinderResponseCubesBreak(jsonDetail, this)
+        if (detail.length >= 5){
+            this.cubesToGameTool(jsonDetail);
+        }else {
+            while(detail.length > 0){
+                var element = detail.pop()
+                this.normalCubeBreakAnimation(element)
+                this.removeBlock(element)
+            }     
             this.scheduleOnce(function() {
                 cc.systemEvent.emit("STEP_COUNT"),
                 cc.director.isrunning || this.whichTimeTampRow("\u79fb\u9664\u64cd\u4f5c")
-            }, .5)
+            }, 0.5)
         }
     },
     normalCubeBreakAnimation: function(e) {
-        var t, n = utils.grid2Pos(e.x, e.y);
-        (t = this.CubeBreakPool.size() > 0 ? this.CubeBreakPool.get() : cc.instantiate(this.normalCubeBreak)).parent = this.node,
-        t.position = n;
+        var cube, pos = utils.grid2Pos(e.x, e.y);
+        if(this.CubeBreakPool.size() > 0){
+            cube = this.CubeBreakPool.get()
+        }else{
+            cube = cc.instantiate(this.normalCubeBreak)
+        }
+        cube.parent = this.node
+        cube.zIndex = 1000
+        cube.position = pos;
         var a = gameData.starMatrix[e.x][e.y]
-        var o = t.getComponent(cc.ParticleSystem);
-        o.spriteFrame = this.cubeBreakList[a]
-        o.resetSystem()
+        var comp = cube.getComponent(cc.ParticleSystem);
+        comp.spriteFrame = this.cubeBreakList[a]
+        comp.resetSystem()
         this.scheduleOnce(function() {
-            this.CubeBreakPool.put(t)
-        }, o.life)
+            this.CubeBreakPool.put(cube)
+        }, comp.life)
     },
-    becomeGameTool: function(e, t, n) {
-        var a;
-        a = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
-        var o = utils.indexValue(e.x, e.y);
-        if (null != gameData.starSprite[o]) {
-            var c = gameData.starSprite[o];
+    becomeGameTool: function(cube, cubesLength, type) {
+        var stone;
+        if(this.stonePool.size() > 0){
+            stone = this.stonePool.get()
+        }else{
+            stone = cc.instantiate(this.stone)
+        }
+        stone.scale = 1
+        var indexValue = utils.indexValue(cube.x, cube.y);
+        if (null != gameData.starSprite[indexValue]) {
+            var c = gameData.starSprite[indexValue];
             this.stonePool.put(c)
         }
-        gameData.starSprite[o] = a,
-        a.parent = this.node,
-        a.position = utils.grid2Pos(e.x, e.y),
-        cc.director.SoundManager.playSound("combine"),
-        this.toolAndSuperToolEffect(e);
-        var r = a.getComponent("block");
-        t >= 5 && t < 7 ? (gameData.starMatrix[e.x][e.y] = 8,
-        r.initStoneView(e.x, e.y, 8, n)) : t >= 7 && t < 9 ? (gameData.starMatrix[e.x][e.y] = 9,
-        r.initStoneView(e.x, e.y, 9, n)) : t >= 9 && (gameData.starMatrix[e.x][e.y] = 10,
-        r.initStoneView(e.x, e.y, 10, n)),
+        gameData.starSprite[indexValue] = stone
+        stone.parent = this.node
+        stone.position = utils.grid2Pos(cube.x, cube.y)
+        cc.director.SoundManager.playSound("combine")      
+        var compBlock = stone.getComponent("block");
+        compBlock.toolCombine.getComponent("toolcombine_effect").effect()
+        if(cubesLength >= 5 && cubesLength < 7){
+            gameData.starMatrix[cube.x][cube.y] = 8,
+            compBlock.initStoneView(cube.x, cube.y, 8, type)
+        }else if(cubesLength >= 7 && cubesLength < 9){
+            gameData.starMatrix[cube.x][cube.y] = 9
+            compBlock.initStoneView(cube.x, cube.y, 9, type)
+        }else if(cubesLength >= 9){
+            gameData.starMatrix[cube.x][cube.y] = 10
+            compBlock.initStoneView(cube.x, cube.y, 10, type)
+        }
         cc.systemEvent.emit("STEP_COUNT"),
         cc.director.isrunning || this.whichTimeTampRow("changeStonetexture")
     },
-    cubesToGameTool: function(e) {
-        var t, n = e.length, a = e[0], o = gameData.getDataBygrid(a);
+    
+    cubesToGameTool: function(cubes) {
+        var cube
+        var cubesLength = cubes.length
+        var cubeFirst = cubes[0]
+        var type = gameData.getDataBygrid(cubeFirst);
         cc.director.SoundManager.playSound("combine1");
-        for (var c = function(e, t, s, n) {
-            n.becomeGameTool(e, t, s);
-            var a = utils.judgeOperateLevel(t);
+        var func = function(_cubeFirst, _cubesLength, _type, _this) {
+            _this.becomeGameTool(_cubeFirst, _cubesLength, _type);
+            var a = utils.judgeOperateLevel(_cubesLength);
             cc.systemEvent.emit("OPERATION_EVALUATE", {
                 level: a
             })
-        }; e.length > 0; )
-            t = e.pop(),
-            0 == e.length ? this.nodeMove(t, a, n, o, c) : this.nodeMove(t, a)
+        }
+        while (cubes.length > 0) {
+            cube = cubes.pop()
+            if(cubes.length == 0){
+                this.nodeMove(cube, cubeFirst, cubesLength, type, func)
+            }else{
+                this.nodeMove(cube, cubeFirst)
+            }
+        }
+    },
+    nodeMove: function(cube, cubeFirst, cubesLength, type, func) { //hiệu ứng create tool
+        var _this = this
+        var indexValue = utils.indexValue(cube.x, cube.y)
+        var block = gameData.starSprite[indexValue]
+        var posMove = utils.grid2Pos(cubeFirst.x, cubeFirst.y);
+        block.getComponent("block").outLine.active = true
+        //block.zIndex = 1;
+        var h = gameData.getDataBygrid(cube);
+        gameData.starSprite[indexValue] = null
+        gameData.cleanStarData([cube])
+        cc.systemEvent.emit("REMOVE_SINGLE_GRASS", {
+            pos: cube
+        })
+        if(h >= 0 && h < 8){
+            cc.systemEvent.emit("REMOVE_SINGLE_BUBBLE", {
+                pos: cube
+            })
+        }
+        block.runAction(
+            cc.sequence(
+                //cc.scaleTo(0.2, 1.5), 
+                cc.spawn(
+                    cc.rotateBy(0.2, 360 * Math.random()), 
+                    //cc.scaleTo(0.2, 0.5), 
+                    cc.moveTo(0.2, posMove)
+                ), 
+                //cc.spawn(cc.scaleTo(0.2, 0.5), cc.fadeOut(0.1)), 
+                cc.callFunc(function() {
+                    _this.removeBlock2(block, h)
+                    if(cubesLength && func && type >= 0){
+                        func(cubeFirst, cubesLength, type, _this)
+                    }
+               }
+           ))
+        )
     },
     balloonBoomEffect: function(e) {
         var t = cc.instantiate(this.balloonBoom)
-          , s = utils.grid2Pos(e.x, e.y);
+        var s = utils.grid2Pos(e.x, e.y);
         t.position = s,
         t.parent = this.node;
+        t.zIndex = 1000
         var n = t.getComponent(cc.Animation);
         n.play("balloon");
         var a = n.getClips()[0].duration;
@@ -192,12 +375,13 @@ cc.Class({
     },
     vineBreakEffect: function(e) {
         var t = cc.instantiate(this.vineBreak)
-          , s = utils.grid2Pos(e.x, e.y);
+        var s = utils.grid2Pos(e.x, e.y);
         t.position = s,
         t.parent = this.node;
+        t.zIndex = 1000
         var n = t.getComponent(cc.Animation);
         cc.director.SoundManager.playSound("vineBreak"),
-        cc.log("anim vineBreak")
+        //cc.log("anim vineBreak")
         n.play("vineBreak");
         var a = n.getClips()[0].duration;
         this.scheduleOnce(function() {
@@ -210,13 +394,14 @@ cc.Class({
         var n = utils.grid2Pos(e.x, e.y);
         s.position = n,
         s.parent = this.node;
+        s.zIndex = 1000
         var a = s.getComponent(cc.Animation);
         if(t == 2){
             a.play("iron_right")
-            cc.log("anim iron_right")
+            //cc.log("anim iron_right")
             cc.director.SoundManager.playSound("ironLine1")
         }else{
-            cc.log("anim iron_left")
+            //cc.log("anim iron_left")
             a.play("iron_left")
             cc.director.SoundManager.playSound("ironLine1")
         }
@@ -231,9 +416,10 @@ cc.Class({
           , s = utils.grid2Pos(e.x, e.y);
         t.position = s,
         t.parent = this.node;
+        t.zIndex = 1000
         var n = t.getComponent(cc.Animation);
         n.play("woodCubeBreak")
-        cc.log("anim woodCubeBreak")
+        //cc.log("anim woodCubeBreak")
         cc.director.SoundManager.playSound("box_bomb");
         var a = n.getClips()[0].duration;
         this.scheduleOnce(function() {
@@ -259,21 +445,26 @@ cc.Class({
             worldPos: s
         })
     },
-    windmillBreakEffect: function(e, t) {
-        var s;   
-        s = 2 == t ? cc.instantiate(this.netBreak1) : cc.instantiate(this.netBreak2);
-        var n = utils.grid2Pos(e.x, e.y);
-        s.parent = this.node,
-        s.position = n,
-        s.zIndex = 2;
-        var a = s.getComponent(cc.Animation);
-        cc.director.SoundManager.playSound("netBreak"),
-        a.play("netBreak" + (3 - t));
-        cc.log("anim windmillBreakEffect", (3 - t))
-        var o = a.getClips()[0].duration;
+    windmillBreakEffect: function(e, type) {
+        cc.log("windmillBreakEffect")
+        var netBreak; 
+        if(type == 2){
+            netBreak = cc.instantiate(this.netBreak1)
+        }else{
+            netBreak = cc.instantiate(this.netBreak2)
+        }  
+        var grid2Pos = utils.grid2Pos(e.x, e.y);
+        netBreak.parent = this.node
+        netBreak.position = grid2Pos
+        netBreak.zIndex = 500;
+        var Animation = netBreak.getComponent(cc.Animation);
+        Animation.play("netBreak" + (3 - type));
+        cc.director.SoundManager.playSound("netBreak")  
+        //cc.log("anim windmillBreakEffect", (3 - t))
+        var duration = Animation.getClips()[0].duration;
         this.scheduleOnce(function() {
-            s.removeFromParent()
-        }, o)
+            netBreak.removeFromParent()
+        }, duration)
          
     },
     windmillDisappearEffect: function(e) {
@@ -303,10 +494,10 @@ cc.Class({
                     }))) : r.runAction(cc.spawn(cc.rotateBy(1, 1800), cc.scaleTo(1, 2))) : r.runAction(cc.spawn(cc.rotateBy(1, 1080), cc.scaleTo(1, .1)))),
                     o == n.length - 1 && this.scheduleOnce(function() {
                         this.vibrate(15,100)
-                        var t = !0
+                        var t = true
                         var o = cc.instantiate(this.windmill_particle);
                         o.parent = this.node,
-                        o.zIndex = 3,
+                        o.zIndex = 600,
                         o.position = utils.grid2Pos(e.x, e.y),
                         o.getComponent(cc.ParticleSystem).resetSystem()
                         cc.director.SoundManager.playSound("grassHit");
@@ -314,7 +505,7 @@ cc.Class({
                         a.removeBlock(c);
                         for (var r = n.length, d = 0; d < r; d++) {
                             var l = n[d];
-                            gameData.starMatrix[l.x][l.y] > 7 ? 27 == gameData.starMatrix[l.x][l.y] ? a.getNodeBygGrid(l).bombRatio > 1 ? a.handleGameToolArray(l) : (t = !1,
+                            gameData.starMatrix[l.x][l.y] > 7 ? 27 == gameData.starMatrix[l.x][l.y] ? a.getNodeBygGrid(l).bombRatio > 1 ? a.handleGameToolArray(l) : (t = false,
                             a.windmillDisappearEffect(l)) : 39 != gameData.starMatrix[l.x][l.y] && a.handleGameToolArray(l) : a.removeBlock(l),
                             d == r - 1 && cc.game.windmillCount--
                         }
@@ -331,10 +522,11 @@ cc.Class({
           , s = utils.grid2Pos(e.x, e.y);
         t.position = s,
         t.parent = this.node;
+        t.zIndex = 1000
         var n = t.getComponent(cc.Animation)
           , a = "colorCube_" + this.getNodeBygGrid(e).nextType;
         n.play(a)
-        cc.log("anim ", a)
+        //cc.log("anim ", a)
         cc.director.SoundManager.playSound("box_bomb");
         var o = n.getClips()[0].duration;
         this.scheduleOnce(function() {
@@ -351,17 +543,18 @@ cc.Class({
             this.tempLadyBugList.push(e);
         var s = cc.instantiate(this.ladyBugBubbleBreak)
           , n = utils.grid2Pos(e.x, e.y);
-        s.position = n,
-        s.parent = this.node,
+        s.position = n
+        s.parent = this.node
+        s.zIndex = 1000
         t = t > 0 ? 3 - t : 3;
         var a = s.getComponent(cc.Animation);
         cc.director.SoundManager.playSound("glassBallBreak");
         var o = "glassBallHit" + t;
         a.play(o);
-        cc.log("anim ", o)
+        //cc.log("anim ", o)
         var c = a.getClips()[t - 1].duration
           , r = this.getNodeBygGrid(e);
-        3 == t && r && (r.view.active = !1,
+        3 == t && r && (r.view.active = false,
         cc.director.needWait = 1,
         cc.director.isSuperTool = 1),
         this.scheduleOnce(function() {
@@ -376,101 +569,114 @@ cc.Class({
           , s = utils.grid2Pos(e.x, e.y);
         t.position = s,
         t.parent = this.node;
+        t.zIndex = 1000
         var n = t.getComponent(cc.Animation);
         cc.director.SoundManager.playSound("cubeRockBreak")
         n.play("cubeRockBreak");
-        cc.log("anim cubeRockBreak")
+        //cc.log("anim cubeRockBreak")
         var a = n.getClips()[0].duration;
         this.scheduleOnce(function() {
             t.removeFromParent()
         }, a)
     },
-    hinderResponseCubesBreak: function(e, t) {
-        this.handleBalloonBomb(e, t),
-        this.handleVineBreak(e, t),
-        this.handleWoodBreak(e, t),
-        this.handleFlowerBreak(e, t),
-        this.handleWindmillBreak(e, t),
-        this.handleColorCubesBreak(e, t),
-        this.handleLadyBugCubesBreak(e, t)
+    hinderResponseCubesBreak: function(detail, _this) { ///check hinder
+        this.handleBalloonBomb(detail, _this)
+        this.handleVineBreak(detail, _this)
+        this.handleWoodBreak(detail, _this)
+        this.handleFlowerBreak(detail, _this)
+        this.handleWindmillBreak(detail, _this)
+        this.handleColorCubesBreak(detail, _this)
+        this.handleLadyBugCubesBreak(detail, _this)
+        this.handleAvartaBreak(detail, _this)
     },
-    handleGameTool: function(e) {
+    handleGameTool: function(detailJS) {
         this.canclePlayerNotice();
-        var t = e.detail
-          , a = utils.needCombineTool(gameData.starMatrix, t.grid);
-        if (a.length >= 2 && !t.from) {
-            var o = this.whichSuperTool(gameData.starMatrix, a);
-            cc.log("sadasd",o)
-            this.triggerGameTool(o, t.grid, a)
+        var detail = detailJS.detail
+        var needCombineTool = utils.needCombineTool(gameData.starMatrix, detail.grid);
+        if (needCombineTool.length >= 2 && !detail.from) {
+            var o = this.whichSuperTool(gameData.starMatrix, needCombineTool);
+            this.triggerGameTool(o, detail.grid, needCombineTool)
         } else {
-            if (t.index == psconfig.rType) {
-                if (0 == t.type ? (
-                    this.removeBlock(t.grid),
-                    this.col_rocket(t.grid)
-                ) : (
-                    this.removeBlock(t.grid),
-                    this.row_rocket(t.grid)
-                ),
+            if (detail.index == psconfig.rType) {
+                if(detail.type == 0){
+                    this.removeBlock(detail.grid)
+                    this.col_rocket(detail.grid)
+                }else{
+                    this.removeBlock(detail.grid)
+                    this.row_rocket(detail.grid)
+                }
                 cc.systemEvent.emit("OPERATION_EVALUATE", {
                     level: 3
-                }),
-                cc.director.isrunning)
+                })
+                if (cc.director.isrunning){
                     return;
+                }
                 this.whichTimeTampRow("\u6e38\u620f\u9053\u5177")
             }
-            if (t.index == psconfig.bType) {
-                this.boomEffect(t.grid);             
-                var c = utils.rainbowStarRemoveList(gameData.starMatrix, t.grid);
-                if(t.from && 1 == t.from){
-                    this.removeBombBlockOnly(c)
+            if (detail.index == psconfig.bType) {
+                this.boomEffect(detail.grid);                      
+                var removeList = utils.rainbowStarRemoveList(gameData.starMatrix, detail.grid);
+                var obj = this.getCustomNodeList(removeList)
+                this.setRatioCustom(obj)
+                if(detail.from && 1 == detail.from){
+                    this.removeBombBlockOnly(removeList)                    
                 }else{
-                    this.removeNineBlock(c)
+                    this.removeNineBlock(removeList)
                 }
                 cc.director.SoundManager.playSound("boom1")
                 cc.systemEvent.emit("OPERATION_EVALUATE", {
                     level: 3
                 })
             }
-            if (t.index == psconfig.dType) {
-                var r = utils.getSameBlockList(gameData.starMatrix, t.grid, t.type);
-                this.discoRotation(t.grid);
-                var d = JSON.parse(JSON.stringify(r));
-                this.effectRemoveSame(t.grid, r, d, this.removeSameColorBlock),
+            if (detail.index == psconfig.dType) {
+                var getSameBlockList = utils.getSameBlockList(gameData.starMatrix, detail.grid, detail.type);
+                this.discoRotation(detail.grid);
+                var d = JSON.parse(JSON.stringify(getSameBlockList));
+                this.effectRemoveSame(detail.grid, getSameBlockList, d, this.removeSameColorBlock)
                 cc.systemEvent.emit("GAMEMASK_CONTROL", {
                     order: 1
                 })
             }
         }
     },
-    boomEffect: function(e) {   
-        this.vibrate(15, 100)
-        var t = cc.instantiate(this.boom_effect)
+    boomEffect: function(e, superBoom) {   
+        cc.log("boomEffect")
+        this.vibrate(10, 70)
+        var boom_effect = cc.instantiate(this.boom_effect)
         var s = utils.grid2Pos(e.x, e.y);
-        t.position = s,
-        t.parent = this.node,
-        t.getComponent(cc.ParticleSystem).resetSystem()
+        if(superBoom && superBoom == "superBoom" ){
+            boom_effect.scale = 2
+        }else{
+            boom_effect.scale = 1
+        }
+        boom_effect.position = s
+        boom_effect.parent = this.node
+        boom_effect.zIndex = 1000
+        //t.getComponent(cc.ParticleSystem).resetSystem()
+        boom_effect.getChildByName("eff").getComponent(dragonBones.ArmatureDisplay).armature()
     },
     superDiscoAnima: function(e) {
         var t = cc.instantiate(this.superDisco)
-          , s = utils.grid2Pos(e.x, e.y);
-        t.position = s,
-        t.parent = this.node,
+        var s = utils.grid2Pos(e.x, e.y);
+        t.position = s
+        t.parent = this.node
+        t.zIndex = 1000
         t.getComponent(cc.ParticleSystem).resetSystem()
     },
     removeNineBlock: function(e) {      
         var t = e.shift();
-        this.effectRemoveCol(t)
+        //this.effectRemoveCol(t)
         this.removeBlock(t)
         if (e.length <= 0){
             this.scheduleOnce(function() {
                 cc.director.isrunning || this.whichTimeTampRow("removeNineBlock1")
-            }, .5);
+            }, 0.5);
         }else{
             for (var i = 0; i < e.length; i++){
                 this.handleGameToolArray(e[i]),
                 i == e.length - 1 && this.scheduleOnce(function() {
                     cc.director.isrunning || this.whichTimeTampRow("removeNineBlock2")
-                }, .5)
+                }, 0.5)
             }
         }
     },
@@ -490,23 +696,24 @@ cc.Class({
         i = cc.instantiate(this.absorb),
         this.getNodeBygGrid(e).discoEffect(i, t)
     },
-    blackHoleEffect: function(e, t, s) {
+    blackHoleEffect: function(e, t, s) {    
         t || (t = 8);
-        var n = new cc.Node;
-        n.parent = this.node;
+        var newNode = new cc.Node;
+        newNode.parent = this.node;
         var a = utils.grid2Pos(e.x, e.y);
-        n.position = a;
-        var o = cc.instantiate(this.absorb);
-        o.parent = n;
-        var c = cc.instantiate(this.toolItem);
-        c.parent = n,
-        o.getComponent(cc.ParticleSystem).resetSystem()
-        c.getComponent("toolItem").changeItemTexture(t)
-        c.runAction(cc.rotateBy(0.5, 540).repeatForever())
+        newNode.position = a;
+        newNode.zIndex = 1000
+        var absorb = cc.instantiate(this.absorb);
+        absorb.parent = newNode;
+        var toolItem = cc.instantiate(this.toolItem);
+        toolItem.parent = newNode
+        absorb.getComponent(cc.ParticleSystem).resetSystem()
+        toolItem.getComponent("toolItem").changeItemTexture(t)
+        toolItem.runAction(cc.rotateBy(0.5, 540).repeatForever())
         this.scheduleOnce(function() {
-            n.removeFromParent(),
+            newNode.removeFromParent()
             s && s(e, 9)
-        }, 0.5)
+        }, 1.5)
     },
     triggerGameTool: function(name, t, n) {
         var a = JSON.parse(JSON.stringify(n));
@@ -526,7 +733,7 @@ cc.Class({
                     this.scheduleOnce(function() {
                         cc.director.isSuperTool = 0
                     }, 1)
-                }, 1.3);
+                }, 2.3);
                 break;
             case "disco&boom":
                 this.toolCombineAnimation(a, function(e, t, i) {
@@ -539,28 +746,37 @@ cc.Class({
                 });
                 break;
             case "superBoom":
+                cc.log("superBoom")
                 this.toolCombineAnimation(a, function(e, t) {
                     var s = cc.instantiate(e.toolItem);
-                    s.parent = e.node,
-                    s.scale = 1,
-                    s.position = utils.grid2Pos(t.x, t.y),
-                    s.getComponent("toolItem").changeItemTexture(2),
-                    cc.director.SoundManager.playSound("superBomb"),
-                    s.runAction(cc.sequence(cc.scaleTo(.3, 4), cc.sequence(cc.rotateBy(.05, 20), cc.rotateBy(.05, -20), cc.rotateBy(.01, 0)).repeat(3), cc.callFunc(function() {
-                        s.removeFromParent(),
-                        e.boomEffect(t)
-                    })))
-                }),
+                    s.parent = e.node
+                    s.scale = 1
+                    s.position = utils.grid2Pos(t.x, t.y)
+                    s.getComponent("toolItem").changeItemTexture(2)
+                    cc.director.SoundManager.playSound("superBomb")
+                    s.runAction(
+                        cc.sequence(
+                            cc.scaleTo(.3, 4), 
+                        cc.sequence(
+                            cc.rotateBy(.05, 20), 
+                            cc.rotateBy(.05, -20), 
+                            cc.rotateBy(.01, 0)
+                        ).repeat(3), 
+                        cc.callFunc(function() {
+                            s.removeFromParent()
+                            e.boomEffect(t, "superBoom")
+                        })
+                    ))
+                })
                 this.scheduleOnce(function() {
-                    this.superBoomEffect(t),
-                    cc.director.SoundManager.playSound("boom1"),
+                    this.superBoomEffect(t)
+                    cc.director.SoundManager.playSound("boom1")
                     this.scheduleOnce(function() {
                         cc.director.isSuperTool = 0
                     }, 1)
-                }, 1.2);
+                }, 1.3);
                 break;
-            case "3row&col":
-                cc.log("3row&col")
+            case "3row&col":  
                 this.toolCombineAnimation(a, function(e, t) {
                     e.blackHoleEffect(t)
                 }),
@@ -570,10 +786,9 @@ cc.Class({
                     this.scheduleOnce(function() {
                         cc.director.isSuperTool = 0
                     }, 1)
-                }, 1.2);
+                }, 2);
                 break;
             case "row&col":
-                cc.log("row&col")
                 this.toolCombineAnimation(a, function(e, t) {
                     e.blackHoleEffect(t, 10)
                 }),
@@ -582,27 +797,45 @@ cc.Class({
                     this.scheduleOnce(function() {
                         cc.director.isSuperTool = 0
                     }, 1)
-                }, 1.2)
+                }, 2)
             }
     },
-    toolCombineAnimation: function(e, t) {
-        var n, a = this, o = e.shift(), c = a.getNodeBygGrid(o);
-        10 == c._stoneType && (n = c.discoType)
+    toolCombineAnimation: function(arr, callback) {
         cc.director.SoundManager.playSound("rotation_combine");
-        for (var r = function() {
-            var c = e.pop()
-              , r = a.getNodeBygGrid(c);
-            10 == r._stoneType && (n = r.discoType);
-            var d = utils.indexValue(c.x, c.y)
-              , l = gameData.starSprite[d]
-              , h = utils.grid2Pos(o.x, o.y);
-            l.runAction(cc.sequence(cc.scaleTo(.2, 1.1), cc.spawn(cc.scaleTo(.2, .9), cc.moveTo(.2, h).easing(cc.easeBounceOut())), cc.spawn(cc.scaleTo(.2, .5), cc.fadeOut(.1)), cc.callFunc(function() {
-                a.removeBlock(c),
-                a.toolAndSuperToolEffect(o),
-                0 == e.length && t(a, o, n)
-            })))
-        }; e.length > 0; )
-            r()
+        var type, _this = this, blockGrid = arr.shift()
+        var blockComp = this.getNodeBygGrid(blockGrid);
+        if(blockComp._stoneType == 10){
+            type = blockComp.discoType
+        }     
+        var func = function() {
+            var c = arr.pop()
+            var r = _this.getNodeBygGrid(c);
+            if(r._stoneType == 10){
+                type = r.discoType
+            } 
+            var index = utils.indexValue(c.x, c.y)
+            var starSprite = gameData.starSprite[index]
+            var pos = utils.grid2Pos(blockGrid.x, blockGrid.y);
+            starSprite.runAction(
+                cc.sequence(
+                    cc.scaleTo(0.2, 1.1), 
+                    cc.spawn(
+                        cc.scaleTo(0.2, 0.9), 
+                        cc.moveTo(0.2, pos).easing(cc.easeBounceOut())
+                    ), 
+                    cc.spawn(cc.scaleTo(0.2, 0.5), cc.fadeOut(0.1)), 
+                cc.callFunc(function() {
+                    _this.removeBlock(c)
+                    _this.toolAndSuperToolEffect(blockGrid)
+                    if(arr.length == 0){
+                        callback(_this, blockGrid, type)
+                    }
+                }))
+            )
+        }  
+        while(arr.length >0){
+            func()
+        }
     },
     getSuperDiscoList: function(e) {
         for (var t = [], i = 0; i < e.length; i++)
@@ -614,8 +847,10 @@ cc.Class({
         return t
     },
     superBoomEffect: function(e) {
-        var t = utils.getThreeBlockArea(gameData.starMatrix, e);
-        this.removeNineBlock(t),
+        var getThreeBlockArea = utils.getThreeBlockArea(gameData.starMatrix, e);
+        var obj = this.getCustomNodeList(getThreeBlockArea)
+        this.setRatioCustom(obj)
+        this.removeNineBlock(getThreeBlockArea)
         this.target.isPass || (cc.systemEvent.emit("GAMEMASK_CONTROL", {
             order: 2
         }),
@@ -650,41 +885,50 @@ cc.Class({
         })),
         this.whichTimeTampRow("row&col"))
     },
-    discoBoomEffect: function(e, t, s) {
-        var n = utils.getSameBlockList(e, s, t);
+    discoBoomEffect: function(e, t, s) {       
+        var sameBlockList = utils.getSameBlockList(e, s, t);
         cc.director.SoundManager.playSound("rotation_combine"),
         this.discoRotation(s, 2),
-        this.changeToBoom(s, n, 1)
+        this.changeToBoom(s, sameBlockList, 1)
     },
-    discoRocketEffect: function(e, t, s) {
-        var n = utils.getSameBlockList(e, s, t);
-        this.discoRotation(s, 1),
-        cc.director.SoundManager.playSound("rotation_combine"),
-        this.changeToBoom(s, n, 2)
+    discoRocketEffect: function(starMatrix, t, s) {
+        cc.director.SoundManager.playSound("rotation_combine")
+        var sameBlockList = utils.getSameBlockList(starMatrix, s, t);
+        this.discoRotation(s, 1)     
+        this.changeToBoom(s, sameBlockList, 2)
     },
-    changeToBoom: function(e, t, s, n) {
-        var a, o = this;
-        if (t.length <= 0)
+    changeToBoom: function(e, sameBlockList, s, n) {
+        var effFire, _this = this;
+        if (sameBlockList.length <= 0){
             return this.executeListEffect(n, s),
             void this.scheduleOnce(function() {
                 cc.director.isSuperTool = 0
             }, 1);
-        n || (n = [e]);
-        var c = t.pop();
+        }
+        if(!n){
+            n = [e]
+        }
+        var c = sameBlockList.pop();
         n.push(c);
         var r = utils.grid2Pos(e.x, e.y)
-          , d = utils.grid2Pos(c.x, c.y);
-        (a = this.firePool.size() > 0 ? this.firePool.get() : cc.instantiate(this.fire)).parent = this.node,
-        a.position = r;
+        var posMove = utils.grid2Pos(c.x, c.y);
+        if(this.firePool.size() > 0){
+            effFire = this.firePool.get()
+        }else{
+            effFire = cc.instantiate(this.fire)
+        }
+        effFire.parent = this.node
+        effFire.zIndex = 1000
+        effFire.position = r;
         var l = this.node.convertToWorldSpaceAR(r)
-          , h = this.node.convertToWorldSpaceAR(d);
-        a.getComponent("arrow").computedLineDistanceAndRotation(l, h),
+        var h = this.node.convertToWorldSpaceAR(posMove);
+        effFire.getComponent("arrow").computedLineDistanceAndRotation(l, h)
         cc.director.SoundManager.playSound("flyStart"),
-        a.runAction(cc.sequence(cc.moveTo(.3, d), cc.callFunc(function() {
-            o.firePool.put(a),
-            o.blockToBoom(c, s),
-            cc.director.SoundManager.playSound("flyEnd"),
-            o.changeToBoom(e, t, s, n)
+        effFire.runAction(cc.sequence(cc.moveTo(0.1, posMove), cc.callFunc(function() {
+            cc.director.SoundManager.playSound("flyEnd")
+            _this.firePool.put(effFire)
+            _this.blockToBoom(c, s)       
+            _this.changeToBoom(e, sameBlockList, s, n)
         })))
     },
     executeListEffect: function(e, t) {
@@ -697,10 +941,10 @@ cc.Class({
             cc.systemEvent.emit("OPERATION_EVALUATE", {
                 level: 3
             })),
-            cc.director.needWait = !0,
+            cc.director.needWait = true,
             this.whichTimeTampRow("\u76f8\u540c\u9053\u5177\u5217\u8868"),
             void this.scheduleOnce(function() {
-                cc.director.needWait = !1
+                cc.director.needWait = false
             }, .5)
         }
         var a = e.shift()
@@ -728,14 +972,17 @@ cc.Class({
     },
     superDiscoEffect: function() {
         var e = this.getSuperDiscoList(gameData.starMatrix);
-        this.removeBlockOnly(e),
-        this.target.isPass || (cc.systemEvent.emit("OPERATION_EVALUATE", {
-            level: 3
-        }),
-        cc.systemEvent.emit("GAMEMASK_CONTROL", {
-            order: 2
-        }),
-        console.log("helloworld"))
+        var obj = this.getCustomNodeList(e)
+        this.setRatioCustom(obj)
+        this.removeBlockOnly(e)
+        this.target.isPass || (
+            cc.systemEvent.emit("OPERATION_EVALUATE", {
+                level: 3
+            }),
+            cc.systemEvent.emit("GAMEMASK_CONTROL", {
+                order: 2
+            })
+        )
     },
     whichSuperTool: function(e, t) {
         for (var i = 0, s = 0, a = 0, o = 0; o < t.length; o++) {
@@ -768,116 +1015,144 @@ cc.Class({
             return t
     },
     handlePlayerTool: function(e) {
+        cc.log("handlePlayerTool", e)
         this.canclePlayerNotice();
         var t = e;
-        if (1 == t.type && (this.scheduleOnce(function() {
-            this.whichTimeTampRow()
-        }, .2),
-        cc.systemEvent.emit("UPDATE_TOOL", {
-            type: 1,
-            statuCode: 2
-        })),
-        2 == t.type && (this.scheduleOnce(function() {
-            this.whichTimeTampRow()
-        }, .2),
-        cc.systemEvent.emit("UPDATE_TOOL", {
-            type: 2,
-            statuCode: 2
-        })),
-        3 == t.type) {
-            var i = t.grid;
-            if (this.toolAndSuperToolEffect(i),
-            gameData.starMatrix[i.x][i.y] >= 8 && gameData.starMatrix[i.x][i.y] <= 10)
-                return;
-            this.handleSingleGrid(t.grid),
+        if(1 == t.type){
             this.scheduleOnce(function() {
                 this.whichTimeTampRow()
-            }, .2),
+            }, 0.2)
+            cc.systemEvent.emit("UPDATE_TOOL", {
+                type: 1,
+                statuCode: 2
+            })
+        }else if(2 == t.type){
+            this.scheduleOnce(function() {
+                this.whichTimeTampRow()
+            }, 0.2)
+            cc.systemEvent.emit("UPDATE_TOOL", {
+                type: 2,
+                statuCode: 2
+            })
+        }else if(3 == t.type){
+            var i = t.grid;
+            this.toolAndSuperToolEffect(i)
+            if (gameData.starMatrix[i.x][i.y] >= 8 && gameData.starMatrix[i.x][i.y] <= 10){
+                return;
+            }
+            var obj = this.getCustomNodeList([t.grid])      
+            this.setRatioCustom(obj)
+            this.handleSingleGrid(t.grid)
+            
+            this.scheduleOnce(function() {
+                this.whichTimeTampRow()
+            }, 0.2)
             cc.director.SoundManager.playSound("ham"),
             cc.systemEvent.emit("UPDATE_TOOL", {
                 type: 3,
                 statuCode: 2
             })
+        }else if(4 == t.type){
+            this.shuffleStarMatrix()
+            cc.director.isMoving = false
+            cc.systemEvent.emit("UPDATE_TOOL", {
+                type: 4,
+                statuCode: 2
+            })
         }
-        4 == t.type && (this.shuffleStarMatrix(),
-        cc.director.isMoving = !1,
-        cc.systemEvent.emit("UPDATE_TOOL", {
-            type: 4,
-            statuCode: 2
-        })),
-        cc.director.isPlayerUsedTool = !0
+        cc.director.isPlayerUsedTool = true
     },
     discoRemoveCuneEffect: function(e) {
         var t = utils.grid2Pos(e.x, e.y)
-          , s = cc.instantiate(this.dust);
-        s.parent = this.node,
-        s.position = t,
+        var s = cc.instantiate(this.dust);
+        s.parent = this.node
+        s.position = t
+        s.zIndex = 1000
         s.getComponent(cc.ParticleSystem).resetSystem()
     },
     effectRemoveCol: function(e) {
         var t, s = utils.grid2Pos(e.x, e.y);
         (t = this.colPool.size() > 0 ? this.colPool.get() : cc.instantiate(this.del_col)).parent = this.node,
-        t.position = s,
+        t.position = s
+        t.zIndex = 1000
         t.getComponent(cc.ParticleSystem).resetSystem()
     },
     test: function(e) {
         var t, s = e.detail, n = utils.grid2Pos(s.x, s.y);
         (t = this.colPool.size() > 0 ? this.colPool.get() : cc.instantiate(this.del_col)).parent = this.node,
-        t.position = n,
+        t.position = n
+        t.zIndex = 1000
         t.getComponent(cc.ParticleSystem).resetSystem()
     },
-    effectRemoveSame: function(e, t, n, a, o) {
-        var c, r = this;
-        if (t.length <= 0){
-            a && a(n, r, o);
-        }else {
-            o || (o = []);
-            var d = t.pop()
-              , l = utils.grid2Pos(e.x, e.y)
-              , h = utils.grid2Pos(d.x, d.y)
-              , p = utils.indexValue(d.x, d.y);
-            if (gameData.starSprite[p]) {
-                (c = this.linePool.size() > 0 ? this.linePool.get() : cc.instantiate(this.line)).parent = this.node;
+    effectRemoveSame: function(grid, getSameBlockList, n, removeSameColorBlockFunc, arr) {
+        var line, _this = this;
+        if (getSameBlockList.length <= 0){
+            if(removeSameColorBlockFunc){
+                //clear
+                _this.scheduleOnce(function() {
+                    removeSameColorBlockFunc(n, _this, arr)
+                }, 1)
                 
-                var m = c.getComponent("line");
-                cc.director.SoundManager.playSound("disco"),
-                m.computedLineDistanceAndRotation(l, h),
-                c.position = l,
-                o.push(c),
-                c.scale = .05,
-                c.runAction(cc.sequence(cc.scaleTo(.1, 1, 1), cc.callFunc(function() {
-                    r.blockEffect(d),
-                    r.effectRemoveSame(e, t, n, a, o)
+            }
+        }else {
+            if(!arr){
+                arr = []
+            }
+            var d = getSameBlockList.pop()
+            var l = utils.grid2Pos(grid.x, grid.y)
+            var h = utils.grid2Pos(d.x, d.y)
+            var p = utils.indexValue(d.x, d.y);
+            if (gameData.starSprite[p]) {
+                if(this.linePool.size() > 0){
+                    line = this.linePool.get()
+                }else{
+                    line = cc.instantiate(this.line)
+                }
+                line.parent = this.node   
+                cc.director.SoundManager.playSound("disco")    
+                var compLine = line.getComponent("line");              
+                compLine.computedLineDistanceAndRotation(l, h)
+                line.position = l
+                line.zIndex = 1000
+                arr.push(line)
+                line.scale = 0.05
+                line.runAction(cc.sequence(cc.scaleTo(0.1, 1, 1), cc.callFunc(function() {
+                    _this.blockEffect(d)
+                    _this.effectRemoveSame(grid, getSameBlockList, n, removeSameColorBlockFunc, arr)
                 })))
             } else{
-                r.effectRemoveSame(e, t, n, a, o)
+                _this.effectRemoveSame(grid, getSameBlockList, n, removeSameColorBlockFunc, arr)
             }
         }
     },
     blockEffect: function(e) {
         var t = utils.indexValue(e.x, e.y)
-          , n = gameData.starSprite[t];
+        var n = gameData.starSprite[t];
         n && n.getComponent("block").blockChoosed()
     },
     blockToBoom: function(e, t) {
         var a = utils.indexValue(e.x, e.y)
-          , o = gameData.starSprite[a];
+        var o = gameData.starSprite[a];
         if (o) {
             var c = gameData.getDataBygrid(e);
             cc.systemEvent.emit("NUMBER_COUNT", {
                 type: c
             });
             var r = o.getComponent("block");
-            1 == t ? (r.changeStoneNum(psconfig.bType),
-            gameData.starMatrix[e.x][e.y] = psconfig.bType) : (r.changeStoneNum(psconfig.rType),
-            gameData.starMatrix[e.x][e.y] = psconfig.rType)
+            1 == t ? (
+                r.changeStoneNum(psconfig.bType),
+                gameData.starMatrix[e.x][e.y] = psconfig.bType
+            ) : (
+                r.changeStoneNum(psconfig.rType),
+                gameData.starMatrix[e.x][e.y] = psconfig.rType
+            )
         }
     },
     isSpecialTool: function(e) {
-        for (var t = !1, i = 0; i < e.length; i++) {
+        for (var t = false, i = 0; i < e.length; i++) {
             var a = e[i];
             if (gameData.starMatrix[a.x][a.y] >= psconfig.rType && gameData.starMatrix[a.x][a.y] < 20) {
-                t = !0;
+                t = true;
                 break
             }
         }
@@ -895,27 +1170,97 @@ cc.Class({
     },
     handleVineBreak: function(e, t) {
         var n = utils.getBalloonClearList(gameData.starMatrix, e, 22);
-        if (n && n.length > 0)
+        if (n && n.length > 0){
             for (; n.length > 0; ) {
                 var a = n.pop()
-                  , o = this.getNodeBygGrid(a);
+                var o = this.getNodeBygGrid(a);
                 t.vineBreakEffect(a),
                 o.bombRatio--,
                 o.cubesUnlock()
             }
+        }
+    },
+    handleAvartaBreak: function(detail, _this) {
+        var balloonClearList = utils.getBalloonClearList(gameData.starMatrix, detail, 40);
+        if (balloonClearList && balloonClearList.length > 0){
+            var obj = _this.getCustomNodeList(balloonClearList)      
+            _this.setRatioCustom(obj)
+        }
+    },
+    setRatioCustom(obj){
+        if(Object.keys(obj).length > 0){
+            var arr = Object.keys(obj).map((key) => [key, obj[key]]);
+            while(arr.length > 0){
+                var element = arr.pop()
+                var nodeCustom = this.customNodeList[element[0]]          
+                var comp = nodeCustom.getComponent("custom_blocks")
+                if(typeof comp.bombRatio == "number"){
+                    comp.bombRatio -= element[1]
+                    if(comp.bombRatio <= 0){
+                        nodeCustom.destroy()
+                        this.customNodeList.splice(element[0],1)
+                    }else{                     
+                        comp.customHit(element[1])
+                    }
+                }
+                this.setEveryBlockInCustomNode(comp.data, element[1])
+            }  
+        }      
+    },
+    setEveryBlockInCustomNode(data, value){
+        var minRow = data[0][0] 
+        var maxRow = data[1][0] 
+        var minCol = data[0][1] 
+        var maxCol = data[1][1] 
+        for(var i = minRow; i <= maxRow; i++){
+            for(var j = minCol; j <= maxCol; j++){
+                var pos = cc.v2(i,j)
+                var comp = this.getNodeBygGrid(pos);
+                if(typeof comp.bombRatio == "number"){
+                    comp.bombRatio -= value
+                    if(comp.bombRatio <= 0){
+                        this.removeBlock(pos)
+                    }
+                }
+            }
+        }
+    },
+    getCustomNodeList(balloonClearList){
+        var obj = {};
+        for(var i = 0; i < this.customNodeList.length; i++){
+            var data = this.customNodeList[i].getComponent("custom_blocks").data
+            var minRow = data[0][0] 
+            var maxRow = data[1][0]
+            ///
+            var minCol = data[0][1] 
+            var maxCol = data[1][1]  
+            var count = 0         
+            balloonClearList.forEach(balloon => {          
+                if(
+                    balloon.x >= minRow && balloon.x <= maxRow &&
+                    balloon.y >= minCol && balloon.y <= maxCol
+                ){
+                    count += 1   
+                    obj[i] = count                                       
+                }
+            })
+        }
+        return obj; 
     },
     handleWoodBreak: function(e, t) {
-        cc.log("handleWoodBreak")
+       //cc.log("handleWoodBreak")
         var n = utils.getBalloonClearList(gameData.starMatrix, e, 23);
         if (n && n.length > 0)
             for (; n.length > 0; ) {
                 var a = n.pop()
-                  , o = this.getNodeBygGrid(a);
-                "number" == typeof o.bombRatio && (o.bombRatio--,
-                o.bombRatio <= 0 ? (t.removeBlock(a),
-                o.boxCubesDisappear(),
-                t.woodCubeBreakEffect(a)) : (o.boxHit(),
-                2 == o.bombRatio ? this.woodBoxBreakEffect(a, 2) : this.woodBoxBreakEffect(a, 1)))
+                var o = this.getNodeBygGrid(a);
+                "number" == typeof o.bombRatio && (
+                    o.bombRatio--,
+                    o.bombRatio <= 0 ? (t.removeBlock(a),
+                    o.boxCubesDisappear(),
+                    t.woodCubeBreakEffect(a)) : (o.boxHit(),
+                    2 == o.bombRatio ? this.woodBoxBreakEffect(a, 2) : this.woodBoxBreakEffect(a, 1))
+                )
             }
     },
     handleFlowerBreak: function(e, t) {
@@ -959,16 +1304,22 @@ cc.Class({
     handleColorBalloonBreak: function(e) {
         utils.getBalloonClearList(gameData.starMatrix, e, 40)
     },
-    handleLadyBugCubesBreak: function(e, t) {
-        var n = utils.getBalloonClearList(gameData.starMatrix, e, 37);
-        if (n && n.length > 0){
-            for (; n.length > 0; ) {
-                var a = n.pop()
-                  , o = this.getNodeBygGrid(a);
-                "number" == typeof o.bombRatio && (o.bombRatio--,
-                o.bombRatio <= 0 ? t.ladyBugCubesBreakEffect(a, o.bombRatio) : (t.ladyBugCubesBreakEffect(a, o.bombRatio),
-                o.hitLadyBugCubes()))
-            }
+    handleLadyBugCubesBreak: function(detail, _this) {
+        var balloonClearList = utils.getBalloonClearList(gameData.starMatrix, detail, 37);
+        if (balloonClearList && balloonClearList.length > 0){
+            while(balloonClearList.length > 0){
+                var element = balloonClearList.pop()
+                var nodeBygGrid = this.getNodeBygGrid(element);
+                if(typeof nodeBygGrid.bombRatio == "number"){
+                    nodeBygGrid.bombRatio--
+                    if(nodeBygGrid.bombRatio <= 0 ){
+                        _this.ladyBugCubesBreakEffect(element, nodeBygGrid.bombRatio)
+                    }else{
+                        _this.ladyBugCubesBreakEffect(element, nodeBygGrid.bombRatio)
+                        nodeBygGrid.hitLadyBugCubes()
+                    }
+                }
+            }    
         }
     },
     ladyBugCubeBreak: function(e) {
@@ -981,7 +1332,7 @@ cc.Class({
         if (n && n.length > 0){          
             for (var a = 0; a < n.length; a++) {
                 var o = n[a];
-                a == n.length - 1 ? this.ladyBugMoveLine(e, o, !0) : this.ladyBugMoveLine(e, o)
+                a == n.length - 1 ? this.ladyBugMoveLine(e, o, true) : this.ladyBugMoveLine(e, o)
             }
         }else{
             cc.director.needWait = 0,
@@ -997,10 +1348,10 @@ cc.Class({
         a = utils.grid2Pos(t.x, t.y);
         var c = cc.instantiate(this.ladyBugMove);
         c.getComponent(cc.Animation).play("ladyBug"),
-        cc.log("anim ladyBug"),
+        //cc.log("anim ladyBug"),
         c.parent = this.node,
         c.position = n,
-        c.zIndex = 10;
+        c.zIndex = 1000;
         var r = [cc.v2(n.x, 3 * (n.y + a.y) / 4), cc.v2(a.x, 1 * (n.y + a.y) / 4), a]
         var d = cc.sequence(cc.bezierTo(1, r), cc.spawn(cc.delayTime(.3), cc.callFunc(function() {
             o.cubeShakeAction(t)
@@ -1023,8 +1374,9 @@ cc.Class({
     },
     ladyBugArriveCubeEffect: function(e) {
         var t = cc.instantiate(this.ladyBugArrive);
-        t.parent = this.node,
-        t.position = e,
+        t.parent = this.node
+        t.position = e
+        t.zIndex = 1000
         t.getComponent(cc.ParticleSystem).resetSystem()
     },
     changeCubesAccordingAround: function(e) {
@@ -1050,10 +1402,10 @@ cc.Class({
         }
     },
     judgeCubes: function(e) {
-        for (var t, n = utils.getItemAdjacentPos(e), a = !1, o = 0; o < n.length; o++) {
+        for (var t, n = utils.getItemAdjacentPos(e), a = false, o = 0; o < n.length; o++) {
             var c = n[o];
             if (gameData.starMatrix[c.x][c.y] >= 0 && gameData.starMatrix[c.x][c.y] < 8) {
-                a = !0,
+                a = true,
                 t = c;
                 break
             }
@@ -1063,6 +1415,7 @@ cc.Class({
     removeSameColorBlock: function(e, t, n) {
         if (e) {
             t.vibrate(15,100)
+            cc.log("removeSameColorBlock")
             t.hinderResponseCubesBreak(e, t);
             for (var a = 0; a < e.length; a++) {
                 var o = utils.indexValue(e[a].x, e[a].y)
@@ -1086,52 +1439,37 @@ cc.Class({
             console.log("error", e)
     },
     updateStoneTexture: function(e, t, n) {
-        var a;
-        a = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
-        var o = utils.indexValue(e.x, e.y);
-        if (null != gameData.starSprite[o]) {
-            var c = gameData.starSprite[o];
+        var block;
+        block = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
+        var indexValue = utils.indexValue(e.x, e.y);
+        if (null != gameData.starSprite[indexValue]) {
+            var c = gameData.starSprite[indexValue];
             this.stonePool.put(c)
         }
-        gameData.starSprite[o] = a,
-        a.parent = this.node,
-        a.position = utils.grid2Pos(e.x, e.y),
-        gameData.updateSingleData(e, t + n),
-        t + n - 1 >= 8 && (cc.director.SoundManager.playSound("combine"),
-        this.toolAndSuperToolEffect(e));
-        var r = a.getComponent("block")
-          , d = gameData.getDataBygrid(e);
-        r.initStoneView(e.x, e.y, d, n),
-        cc.systemEvent.emit("STEP_COUNT"),
+        gameData.starSprite[indexValue] = block
+        block.parent = this.node
+        block.position = utils.grid2Pos(e.x, e.y)
+        gameData.updateSingleData(e, t + n)
+        
+        var blockComp = block.getComponent("block")
+        var data = gameData.getDataBygrid(e);
+        blockComp.initStoneView(e.x, e.y, data, n)
+        if(t + n - 1 >= 8){
+            cc.director.SoundManager.playSound("combine")
+            blockComp.toolCombine.getComponent("toolcombine_effect").effect()
+        }
+        cc.systemEvent.emit("STEP_COUNT")
         cc.director.isrunning || this.whichTimeTampRow("changeStonetexture")
     },
     toolAndSuperToolEffect: function(e) {
-        var t = utils.grid2Pos(e.x, e.y)
-          , s = cc.instantiate(this.toolCombineEffect);
-        s.position = t,
-        s.parent = this.node
+        var pos = utils.grid2Pos(e.x, e.y)
+        var combineEffect = cc.instantiate(this.toolCombineEffect);
+        combineEffect.position = pos
+        combineEffect.parent = this.node
+        combineEffect.zIndex = 1000
+        combineEffect.getComponent("toolcombine_effect").effect()
     },
-    nodeMove: function(e, t, n, a, o) {
-        var c = this
-          , r = utils.indexValue(e.x, e.y)
-          , d = gameData.starSprite[r]
-          , l = utils.grid2Pos(t.x, t.y);
-        d.getComponent("block").outLine.active = !0,
-        d.zIndex = 1;
-        var h = gameData.getDataBygrid(e);
-        gameData.starSprite[r] = null,
-        gameData.cleanStarData([e]),
-        cc.systemEvent.emit("REMOVE_SINGLE_GRASS", {
-            pos: e
-        }),
-        h >= 0 && h < 8 && cc.systemEvent.emit("REMOVE_SINGLE_BUBBLE", {
-            pos: e
-        }),
-        d.runAction(cc.sequence(cc.scaleTo(.2, 1.5), cc.spawn(cc.rotateBy(.2, 360 * Math.random()), cc.scaleTo(.2, .5), cc.moveTo(.2, l)), cc.spawn(cc.scaleTo(.2, .5), cc.fadeOut(.1)), cc.callFunc(function() {
-            c.removeBlock2(d, h),
-            n && o && a >= 0 && o(t, n, a, c)
-        })))
-    },
+   
     removeBlock2: function(e, t) {
         e && (cc.systemEvent.emit("NUMBER_COUNT", {
             type: t
@@ -1142,15 +1480,15 @@ cc.Class({
     },
     removeBlock: function(e, t) {
         var n = utils.indexValue(e.x, e.y)
-          , a = gameData.starSprite[n];
+        var a = gameData.starSprite[n];
         if (a) {
             var o = gameData.getDataBygrid(e);
-            t || (
+            if(!t){
                 cc.systemEvent.emit("NUMBER_COUNT", {
                     type: o
-                }),
+                })
                 o < 20 ? this.progressBar.judgeStepScore(250) : this.progressBar.judgeStepScore(0)
-            )
+            }
             gameData.starSprite[n] = null
             this.stonePool.put(a)
             gameData.cleanStarData([e])
@@ -1192,50 +1530,70 @@ cc.Class({
         return !!n && n.getComponent("block")
     },
     tampRows: function() {
-        this.canclePlayerNotice(),
-        this.resumeOriginView(),
-        this.queryCanFall(),
-        this.addStar(),
-        utils.gameOver(gameData.starMatrix) && (cc.systemEvent.emit("GAMEMASK_CONTROL", {
-            order: 1
-        }),
-        this.scheduleOnce(function() {
-            cc.systemEvent.emit("SHUFFLE_TIPS")
-        }, 1.5),
-        this.scheduleOnce(function() {
-            this.shuffleStarMatrix()
-        }, 2.5)),
-        this.isPineToEnd(),
-        cc.director.isMoving = !1,
-        gameData.bestLevel > 0 && this.showTipsView()
+        this.canclePlayerNotice()
+        this.resumeOriginView()
+        this.queryCanFall()
+        this.addStar()
+        if(utils.gameOver(gameData.starMatrix)){
+            cc.systemEvent.emit("GAMEMASK_CONTROL", {
+                order: 1
+            })
+            this.scheduleOnce(function() {
+                cc.systemEvent.emit("SHUFFLE_TIPS")
+            }, 1.5)
+            this.scheduleOnce(function() {
+                this.shuffleStarMatrix()
+            }, 2.5)
+        }
+        this.isPineToEnd()
+        cc.director.isMoving = false
+        /* gameData.bestLevel > 0 && */ this.showTipsView()
     },
     queryCanFall: function(e) {
         var t;
         t = "number" == typeof e ? e : 0;
         for (var i = 0; i < psconfig.matrixCol; i++) {
-            for (var a = i, o = -1, c = t; c < psconfig.matrixRow; c++)
-                if (-1 == gameData.starMatrix[c][a]) {
-                    o = c;
+            var type = -1
+            for (var j = t; j < psconfig.matrixRow; j++){
+                if (-1 == gameData.starMatrix[j][i]) {
+                    type = j;
                     break
                 }
-            if (o >= 0)
-                for (var r = o; r < psconfig.matrixRow; r++)
-                    if (-2 != gameData.starMatrix[r][a] && 26 != gameData.starMatrix[r][a] && 27 != gameData.starMatrix[r][a]) {
-                        for (var d = -1, l = r + 1; l < psconfig.matrixRow; l++)
-                            if (gameData.starMatrix[l][a] >= 0 && 26 != gameData.starMatrix[l][a] && 27 != gameData.starMatrix[l][a]) {
-                                d = l;
+            }
+            if (type >= 0){
+                for (var k = type; k < psconfig.matrixRow; k++){
+                    if (
+                        gameData.starMatrix[k][i] != -2 && gameData.starMatrix[k][i] != 26 && 
+                        gameData.starMatrix[k][i] != 27 
+
+                    ) {
+                        var d = -1
+                        for (var h = k + 1; h < psconfig.matrixRow; h++){
+                            if (
+                                gameData.starMatrix[h][i] >= 0 && gameData.starMatrix[h][i] != 26 &&  
+                                gameData.starMatrix[h][i] != 27 
+                            ) {
+                                d = h;
                                 break
                             }
+                        }
                         if (d >= 0) {
-                            if (22 == gameData.starMatrix[d][a] || gameData.starMatrix[d][a] >= 23 && gameData.starMatrix[d][a] <= 25 || gameData.starMatrix[d][a] >= 29 && gameData.starMatrix[d][a] <= 36) {
+                            if (
+                                gameData.starMatrix[d][i] == 22 ||                             
+                                gameData.starMatrix[d][i] >= 23 && gameData.starMatrix[d][i] <= 25 || 
+                                gameData.starMatrix[d][i] >= 29 && gameData.starMatrix[d][i] <= 36 ||
+                                gameData.starMatrix[d][i] == 40 
+                            ) {
                                 this.queryCanFall(d + 1);
                                 break
                             }
-                            gameData.starMatrix[r][a] = gameData.starMatrix[d][a],
-                            gameData.starMatrix[d][a] = -1,
-                            this.donwMove(cc.v2(r, a), cc.v2(d, a))
+                            gameData.starMatrix[k][i] = gameData.starMatrix[d][i]
+                            gameData.starMatrix[d][i] = -1
+                            this.donwMove(cc.v2(k, i), cc.v2(d, i))
                         }
                     }
+                }
+            }
         }
     },
     showTipsView: function() {
@@ -1254,26 +1612,33 @@ cc.Class({
         }
     },
     resumeOriginView: function() {
-        for (var e = 0; e < psconfig.matrixRow; e++)
-            for (var t = 0; t < psconfig.matrixCol; t++)
+        for (var e = 0; e < psconfig.matrixRow; e++){
+            for (var t = 0; t < psconfig.matrixCol; t++){
                 if (gameData.starMatrix[e][t] >= 0 && gameData.starMatrix[e][t] < psconfig.rType) {
                     var i = cc.v2(e, t);
                     this.getNodeBygGrid(i).originView()
                 }
+            }
+        }
     },
     donwMove: function(e, t) {
+        //cc.log("donwMove")
         var n = utils.indexValue(t.x, t.y)
-          , a = utils.indexValue(e.x, e.y)
-          , o = utils.grid2Pos(e.x, e.y)
-          , c = gameData.starSprite[n];
-        c.stopActionByTag(5),
-        c.getComponent("block").changeStoneGrid(e.x, e.y),
-        gameData.starSprite[a] = c,
+        var a = utils.indexValue(e.x, e.y)
+        var o = utils.grid2Pos(e.x, e.y)
+        var c = gameData.starSprite[n];
+        c.stopActionByTag(5)
+        c.getComponent("block").changeStoneGrid(e.x, e.y)
+        gameData.starSprite[a] = c
         gameData.starSprite[n] = null;
-        var r = cc.sequence(cc.moveTo(.01 * t.x, o).easing(cc.easeExponentialIn()), cc.jumpTo(.1, o, 10, 1), cc.callFunc(function() {
-            cc.director.SoundManager.playSound("drop4")
-        }));
-        r.tag = 5,
+        var r = cc.sequence(
+            cc.moveTo(.01 * t.x, o).easing(cc.easeExponentialIn()), 
+            cc.jumpTo(.1, o, 10, 1), 
+            cc.callFunc(function() {
+                cc.director.SoundManager.playSound("drop4")
+            })
+        );
+        r.tag = 5
         c.runAction(r)
     },
     isPineToEnd: function() {
@@ -1318,115 +1683,158 @@ cc.Class({
         return t.length > 0 && t
     },
     judgePineDowm: function(e, t) {
-        var i = !0
+        var i = true
           , s = e.x;
         if (0 == s)
             return i;
         for (var n = s - 1; n >= 0; n--)
             if (-2 != t[n][e.y]) {
-                i = !1;
+                i = false;
                 break
             }
         return i
     },
     addStar: function() {
-        for (var e = 0; e < psconfig.matrixCol; e++) {
-            for (var t = -1, i = psconfig.matrixRow - 1; i >= 0; i--)
-                if (22 == gameData.starMatrix[i][e] || gameData.starMatrix[i][e] >= 23 && gameData.starMatrix[i][e] <= 25 || gameData.starMatrix[i][e] >= 29 && gameData.starMatrix[i][e] <= 36) {
-                    t = i;
+        for (var i = 0; i < psconfig.matrixCol; i++) {
+            var t = -1
+            for (var j = psconfig.matrixRow - 1; j >= 0; j--){
+                if (
+                    gameData.starMatrix[j][i] == 22 ||       
+                    (gameData.starMatrix[j][i] >= 23 && gameData.starMatrix[j][i] <= 25) || 
+                    (gameData.starMatrix[j][i] >= 29 && gameData.starMatrix[j][i] <= 36) ||
+                    gameData.starMatrix[j][i] == 40                   
+                ) {
+                    t = j;
                     break
                 }
+            }
             if (t >= 0) {
-                for (var a = t; a < psconfig.matrixRow; a++)
-                    if (-1 == gameData.starMatrix[a][e]) {
-                        var o = cc.v2(a, e);
+                for (var k = t; k < psconfig.matrixRow; k++){
+                    if (gameData.starMatrix[k][i] == -1) {
+                        var o = cc.v2(k, i);
                         this.fallStoneFromTop(o)
                     }
-            } else
-                for (var c = 0; c < psconfig.matrixRow; c++)
-                    if (-1 == gameData.starMatrix[c][e]) {
-                        var r = cc.v2(c, e);
+                }
+            } else{
+                for (var h = 0; h < psconfig.matrixRow; h++){
+                    if (gameData.starMatrix[h][i] == -1) {
+                        var r = cc.v2(h, i);
                         this.fallStoneFromTop(r)
-                    }
+                    }              
+                }
+            }
         }
-        this.target.isPass || this.handleCanCombineTool()
+
+        if(!this.target.isPass){
+            this.handleCanCombineTool()
+        }
     },
     handleCanCombineTool: function() {
-        if (this.effectList)
-            for (; this.effectList.length > 0; )
-                this.effectList.pop().getChildByName("temp").removeAllChildren();
-        else
+        if (this.effectList) {
+            while (this.effectList.length > 0) {
+                let effectNode = this.effectList.pop();
+                let tempNode = effectNode.getChildByName("temp");
+                if (tempNode) {
+                    tempNode.removeAllChildren();
+                }
+            }
+        } else {
             this.effectList = [];
-        for (var e = utils.judgeNearNode(gameData.starMatrix); e.length > 0; ) {
-            var t, n = e.pop(), a = this.getNodeBygGrid(n);
-            t = cc.instantiate(this.tool_effect),
-            a.toolCanCombineEffect(t),
-            this.effectList.push(a.node)
+        }
+        let nearNodes = utils.judgeNearNode(gameData.starMatrix);
+        while (nearNodes.length > 0) {
+            let gridPosition = nearNodes.pop();
+            let gridNode = this.getNodeBygGrid(gridPosition);
+    
+            // Instantiate tool effect and apply it to the node
+            let toolEffect = cc.instantiate(this.tool_effect);
+            gridNode.toolCanCombineEffect(toolEffect);
+    
+            // Add the node to the effect list
+            this.effectList.push(gridNode.node);
         }
     },
     removeToolEffect: function(e) {
         var t = this.getNodeBygGrid(e).temp
           , i = t.getChildByName("tool_effect");
         this.toolEffectPool.put(i),
-        t.active = !1
+        t.active = false
     },
     fallStoneFromTop: function(e) {
-        var t, n = e.y;
-        t = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
-        var a = utils.grid2Pos(10, n);
-        this.node.addChild(t);
-        var o = t.getComponent("block")
-        var c = utils.randomColorByArray([1, 2, 3, 4, 5]);
-        o.initStoneView(e.x, e.y, c - 1)
-        gameData.updateSingleData(e, c)
-        t.position = a;
+        var stone, y = e.y;
+        stone = this.stonePool.size() > 0 ? this.stonePool.get() : cc.instantiate(this.stone);
+        var pos = utils.grid2Pos(10, y);
+        this.node.addChild(stone);
+        var comp = stone.getComponent("block")
+        var randomColor = utils.randomColorByArray([1, 2, 3, 4, 5]);
+        comp.initStoneView(e.x, e.y, randomColor - 1)
+        gameData.updateSingleData(e, randomColor)
+        stone.position = pos;
         var r = utils.grid2Pos(e.x, e.y)
         var d = utils.indexValue(e.x, e.y);
-        gameData.starSprite[d] = t
-        t.runAction(
+        gameData.starSprite[d] = stone
+        stone.runAction(
             cc.sequence(
-                cc.fadeIn(0.1), cc.moveTo(.01 * e.x, r).easing(cc.easeExponentialIn()), cc.callFunc(function() {
+                cc.fadeIn(0.1), cc.moveTo(0.01 * e.x, r).easing(cc.easeExponentialIn()), cc.callFunc(function() {
                     cc.director.SoundManager.playSound("drop4")
                 }),
                 cc.jumpBy(0.1, cc.v2(0, 0), 10, 1)
             )
         )
+
+      
     },
     shuffleStarMatrix: function() {
         this.canclePlayerNotice()
         cc.director.SoundManager.playSound("dice");
-        for (var e = gameData.starSprite, t = [], a = 0; a < e.length; a++)
-            if (e[a]) {
-                var o = e[a].getComponent("block")._stoneType;
-                o >= 0 && o < psconfig.rType && t.push(e[a])
-            }
-        t = this.shuffle(t);
-        for (var c = 0, r = 0; r < e.length; r++)
-            if (e[r]) {
-                var d = e[r].getComponent("block")._stoneType;
-                d >= 0 && d < psconfig.rType && (e[r] = t[c],
-                c++)
-            }
-        for (var l = 0; l < psconfig.matrixRow; l++)
-            for (var h = 0; h < psconfig.matrixCol; h++)
-                if (gameData.starMatrix[l][h] >= 0 && gameData.starMatrix[l][h] < psconfig.rType) {
-                    var p = utils.indexValue(l, h)
-                      , m = gameData.starSprite[p]
-                      , u = m.getComponent("block")
-                      , g = utils.grid2Pos(l, h);
-                    m.runAction(cc.moveTo(.5, g)),
-                    gameData.starMatrix[l][h] = u._stoneType,
-                    u.changeStoneGrid(l, h)
+        var starSprite = gameData.starSprite, arr = []
+        for (var i = 0; i < starSprite.length; i++){
+            if (starSprite[i] ) {
+                var _stoneType = starSprite[i].getComponent("block")._stoneType;
+                if(_stoneType >= 0 && _stoneType < psconfig.rType){
+                    arr.push(starSprite[i])
                 }
-        this.handleCanCombineTool(),
-        this.resumeOriginView(),
-        gameData.bestLevel > 0 && this.showTipsView(),
-        utils.gameOver(gameData.starMatrix) ? (cc.systemEvent.emit("SHUFFLE_TIPS"),
-        this.scheduleOnce(function() {
-            this.shuffleStarMatrix()
-        }, 1.5)) : cc.systemEvent.emit("GAMEMASK_CONTROL", {
-            order: 2
-        })
+            }
+        }
+        arr = this.shuffle(arr);
+
+        var count = 0
+        for (var i = 0; i < starSprite.length; i++){
+            if (starSprite[i]) {
+                var _stoneType = starSprite[i].getComponent("block")._stoneType;
+                if(_stoneType >= 0 && _stoneType < psconfig.rType){
+                    starSprite[i] = arr[count]
+                    count++
+                }
+            }
+        }
+
+        for (var i = 0; i < psconfig.matrixRow; i++){
+            for (var j = 0; j < psconfig.matrixCol; j++){
+                if (gameData.starMatrix[i][j] >= 0 && gameData.starMatrix[i][j] < psconfig.rType) {
+                    var indexValue = utils.indexValue(i, j)
+                    var m = gameData.starSprite[indexValue]
+                    var block = m.getComponent("block")
+                    var grid2Pos = utils.grid2Pos(i, j);
+                    m.runAction(cc.moveTo(0.5, grid2Pos))
+                    gameData.starMatrix[i][j] = block._stoneType
+                    block.changeStoneGrid(i, j)
+                }
+            }
+        }
+        this.handleCanCombineTool()
+        this.resumeOriginView()
+        /* gameData.bestLevel > 0 && */ this.showTipsView()
+        if(utils.gameOver(gameData.starMatrix)){
+            cc.systemEvent.emit("SHUFFLE_TIPS"),
+            this.scheduleOnce(function() {
+                this.shuffleStarMatrix()
+            }, 1.5)
+        }else{
+            cc.systemEvent.emit("GAMEMASK_CONTROL", {
+                order: 2
+            })
+        }
     },
     shuffle: function(e) {
         for (var t, i, s = e.length; s; )
@@ -1440,9 +1848,10 @@ cc.Class({
         t = this.firePool.size() > 0 ? this.firePool.get() : cc.instantiate(this.fire);
         var a, o = this.node.convertToNodeSpaceAR(n.startPos);
         if (n.endGrid) {
-            a = utils.grid2Pos(n.endGrid.x, n.endGrid.y),
-            t.parent = this.node,
-            t.position = o,
+            a = utils.grid2Pos(n.endGrid.x, n.endGrid.y)
+            t.parent = this.node
+            t.position = o
+            t.zIndex = 1000
             cc.director.SoundManager.playSound("flyStart"),
            // cc.log(t)
             t.getComponent("arrow").computedLineDistanceAndRotation(n.startPos, a);
@@ -1468,11 +1877,11 @@ cc.Class({
                     e = cc.v2(t, i);
                     break
                 }
-        return e || !1
+        return e || false
     },
     executePassEffect: function() {
         var e = this.getGameTool();
-        this.passIndex = !0
+        this.passIndex = true
         if(e){
             this.handleGameToolArray(e)
             this.scheduleOnce(function() {
@@ -1582,7 +1991,7 @@ cc.Class({
                 this.previousMovedVector = this.getRandomUnitSphere().multiplyScalar(this.force)
                 pos.addSelf(this.previousMovedVector)
             }else{
-                this.shouldVibrate = !1
+                this.shouldVibrate = false
             }
             this.node.parent.setPosition(pos)
         }
@@ -1599,32 +2008,36 @@ cc.Class({
         return new cc.Vec2(Math.random(),Math.random()).normalizeSelf()
     },
     addGameToolToContainer: function(e, t) { 
-        for (var n = this, a = !1, o = 0; o < e.length; o++){
+        var _this = this, bool = false
+        for (var o = 0; o < e.length; o++){
             if (e[o] > 0) {
-                a = !0;
+                bool = true;
                 break
             }
         }
-        if (e.length <= 0 || !a){
-            return cc.systemEvent.emit("GAMEMASK_CONTROL", {
+        if (e.length <= 0 || !bool){
+            cc.systemEvent.emit("GAMEMASK_CONTROL", {
                 order: 2
-            }),
+            })
             this.guideNode.active = true;
+            return
         }
         var c = utils.getRandomBlockPosition(gameData.starMatrix, 3);
-        this.isMoving = !0;
-        for (var r = function(i) {
-            n.scheduleOnce(function() {
+        this.isMoving = true;
+        for (var func = function(i) {
+            _this.scheduleOnce(function() {
                 if (e[i] > 0) {
                     var n = e[i];
-                    t || (gameData.gameToolList[i] -= n);
-                    var a = this.getNodeBygGrid(c[i])
-                      , o = a.node;
-                    o.scale = 1.2,
-                    o.runAction(cc.scaleTo(.5, 1)),
-                    this.toolAndSuperToolEffect(c[i]),
-                    gameData.starMatrix[c[i].x][c[i].y] = 8 + i,
-                    a.changeStoneNum(8 + i),
+                    if(!t){
+                        gameData.gameToolList[i] -= n
+                    }
+                    var blockComp = this.getNodeBygGrid(c[i])
+                    var nodeBlock = blockComp.node;
+                    nodeBlock.scale = 1.2
+                    nodeBlock.runAction(cc.scaleTo(0.5, 1))
+                    blockComp.toolCombine.getComponent("toolcombine_effect").effect()
+                    gameData.starMatrix[c[i].x][c[i].y] = 8 + i
+                    blockComp.changeStoneNum(8 + i)
                     e[i] = 0
                     cc.director.SoundManager.playSound("choosed_voice")
                 }
@@ -1639,108 +2052,65 @@ cc.Class({
                 ) 
             }, 1 * i)
         }, d = 0; d < e.length; d++)
-            r(d)
+        func(d)
     },
 
-    startNewGame: function() {
-        if(gameData.tournamentData){
-            this.currentLevel = gameData.tournamentData.level
-            cc.log("start game level: ", gameData.tournamentData.level + 1)
-        }else{
-            cc.log("start game level: ", gameData.bestLevel + 1)
-            this.currentLevel = gameData.bestLevel
-        }
-        
-        var mapList, levelResource, step, targetList, c, r, d;
-        cc.game.GameMoveStatus = 0
-        cc.game.windmillCount = 0
-        this.canclePlayerNotice()
-        cc.director.isPine = 0
-        cc.director.checkLastPine = 0
-        if ( this.currentLevel >= 0 &&  this.currentLevel <= 300){
-            levelResource = newLevelResource[this.currentLevel]
-            mapList = JSON.parse(JSON.stringify(levelResource.mapList))
-            gameData.starMatrix = mapList
-            this.list = levelResource.targetList
-            step = levelResource.step;
-        }else {
-            if (!this.hinderList) {
-                targetList = this.createRandomTargetList();
-                var hinderList = this.createHinderList(targetList)
-                var h = utils.initMatrixDataPortraitRandom()
-                var p = utils.addHinder(h, hinderList[0], -2);
-                utils.addHinder(h, hinderList[1], 20)
-                p = utils.addHinder(h, hinderList[2], 21)
-                this.hinderList = p
-                this.list = targetList
-                step = this.createStep()
-                this.tempStep = step
-            }
-            mapList = JSON.parse(JSON.stringify(this.hinderList))
-            targetListo = this.list
-            gameData.starMatrix = mapList
-            step = this.tempStep
-            levelResource = {}
-        }
-        cc.director.isMoving = !1
-        this.progressBar.initProgressBar()
-        this.initContainerView(mapList)
-        this.bgPrompt.initBgPrompt(gameData.starMatrix)
-        this.target.resumeGameStatues()
-        this.target.updateNodeTag(this.list, step)
-        c = levelResource.grassList
-        r = levelResource.stoneList
-        d = levelResource.bubbleList
-        c && r && this.grassGround.initFunc(c, r)
-        d && this.bubbleGround.initFunc(d)
-        gameData.bestLevel > 0 && this.showTipsView()
-        cc.director.dialogScript.goalDisplay.initGoalNumber(this.list)
-        cc.director.videoCount = 1
-        this.handleCanCombineTool()
-        cc.systemEvent.emit("GAMEMASK_CONTROL", {
-            order: 1
-        })
-    },
     createRandomTargetList: function() {
-        var e, t = [0, 1, 2, 3, 4, 5, 20, 21], i = [], n = [];
-        for (e =  this.currentLevel >= 60 ? 4 : 3; i.length < e; ) {
-            var a = []
-              , o = Math.floor(Math.random() * t.length);
-            if (!this.isContain(n, o)) {
-                n.push(o);
-                var c = 15 + Math.floor(Math.random() * t.length);
-                a[0] = t[o],
-                a[1] = t[o] >= 4 ? c - 10 : c,
-                i.push(a)
+        var possibleTargets = [0, 1, 2, 3, 4, 5, 20, 21];
+        var targetList = [];
+        var selectedIndices = [];
+        // Determine the number of targets based on the current level
+        var numTargets = this.currentLevel >= 60 ? 4 : 3;
+        while (targetList.length < numTargets) {
+            // Generate a random index
+            var randomIndex = Math.floor(Math.random() * possibleTargets.length);
+            // Check if the index is already selected
+            if (!this.isContain(selectedIndices, randomIndex)) {
+                selectedIndices.push(randomIndex);
+                // Generate the target value
+                var randomValue = 15 + Math.floor(Math.random() * possibleTargets.length);
+                var target = [];
+                target[0] = possibleTargets[randomIndex];
+                target[1] = target[0] >= 4 ? randomValue - 10 : randomValue; 
+                // Add the target to the target list
+                targetList.push(target);
             }
-        }
-        return i.sort(function(e, t) {
-            return e[0] - t[0]
-        }),
-        i
+        }   
+        // Sort the target list by the first element of each target
+        targetList.sort(function(a, b) {
+            return a[0] - b[0];
+        });
+        return targetList;
     },
     createHinderList: function(e) {
-        var arr = [12, 0, 0], count = 20
+        var hinderList = [12, 0, 0]; // Initialize the hinder list with default values
+        var count = 20; // Start count at 20
+    
+        // Loop through the hinderList starting from index 1 to 2
         for (var i = 1; i < 3; i++) {
-            var n = -1
-            for (var j = 0; j < e.length; j++){
+            var index = -1; // Initialize index to -1 (indicating not found)   
+            // Loop through the input array `e` to find a matching element
+            for (var j = 0; j < e.length; j++) {
                 if (e[j][0] == count) {
-                    n = j;
-                    break
+                    index = j;
+                    break;
                 }
-            }
-            n >= 0 && (arr[i] = e[n][1]),
-            count++
-        }
-        return arr
+            }  
+            // If a matching element was found, update the hinderList
+            if (index >= 0) {
+                hinderList[i] = e[index][1];
+            }   
+            count++; // Increment the count for the next iteration
+        }  
+        return hinderList; // Return the generated hinder list
     },
     createStep: function() {
         return 35 + Math.floor(15 * Math.random())
     },
     isContain: function(e, t) {
-        for (var i = !1, s = 0; s < e.length; s++)
+        for (var i = false, s = 0; s < e.length; s++)
             if (t == e[s]) {
-                i = !0;
+                i = true;
                 break
             }
         return i
@@ -1767,6 +2137,7 @@ cc.Class({
         e.position = c,
         e.angle = -a,
         e.parent = this.node;
+        e.zIndex = 1000
         var r = cc.sequence(cc.moveTo(.5, cc.v2(c.x, c.y + 800 * s)), cc.callFunc(function() {
             e.removeFromParent()
         }))
@@ -1906,7 +2277,7 @@ cc.Class({
             cc.systemEvent.emit("FUNCTION_EXPLAIN_OFF")
         }))))
     },
-    handleSingleGrid: function(e) {
+    handleSingleGrid: function(e) { 
         var t = utils.indexValue(e.x, e.y);
         if (null != gameData.starSprite[t]) {
             var a = this.getNodeBygGrid(e);
@@ -1914,10 +2285,10 @@ cc.Class({
                 cc.director.container.balloonBoomEffect(e),
                 cc.director.container.removeBlock(e);
             }else if (a._stoneType >= 0 && a._stoneType < psconfig.rType){
-                //cc.director.container.removeBlock(e),
-                //cc.director.container.effectRemoveCol(e);
-                cc.director.container.normalCubeBreakAnimation(e)
-                cc.director.container.removeBlock(e)
+                cc.director.container.removeBlock(e),
+                cc.director.container.effectRemoveCol(e);
+                //cc.director.container.normalCubeBreakAnimation(e)
+                //cc.director.container.removeBlock(e)
             }else if (8 == a._stoneType){
                 0 == a.rocketType ? (cc.director.container.removeBlock(e),
                 cc.director.container.col_rocket(e)) : (cc.director.container.removeBlock(e),
@@ -1932,10 +2303,10 @@ cc.Class({
                 cc.systemEvent.emit("GAME_TOOL", {
                     detail: o
                 })
-            } else if (10 == a._stoneType) {
+            }else if (10 == a._stoneType) {
                 if (a.isEffect)
-                    return void (a.isEffect = !1);
-                a.isEffect = !0;
+                    return void (a.isEffect = false);
+                a.isEffect = true;
                 var c = {
                     index: a._stoneType,
                     type: a.discoType,
@@ -1945,41 +2316,41 @@ cc.Class({
                 cc.systemEvent.emit("GAME_TOOL", {
                     detail: c
                 })
-            } else{
-                22 == a._stoneType ? (
+            }else{
+                if(22 == a._stoneType){
                     a.bombRatio--,
                     a.cubesUnlock(),
                     cc.director.container.vineBreakEffect(e)
-                ) : 23 == a._stoneType || 24 == a._stoneType || 25 == a._stoneType ? (
+                }else if(23 == a._stoneType || 24 == a._stoneType || 25 == a._stoneType){  
                     a.bombRatio--,
                     a.bombRatio <= 0 ? (cc.director.container.woodCubeBreakEffect(e),
                     cc.director.container.removeBlock(e),
                     a.boxCubesDisappear()) : (a.boxHit(),
                     cc.director.container.woodBoxBreakEffect(e))
-                ) : 26 == a._stoneType ? (
+                }else if(26 == a._stoneType){
                     a.bombRatio--,
                     a.bombRatio < 0 ? (cc.director.container.flowerCollectAnimation(e),
                     a.collectFlower()) : (a.flowerHit(),
                     cc.director.container.flowerOpenEffect(e))
-                ) : 27 == a._stoneType ? (
+                }else if(27 == a._stoneType){
                     a.bombRatio--,
                     a.bombRatio <= 0 ? cc.director.container.windmillDisappearEffect(e) : (a.hitWindmill(),
                     cc.director.container.windmillBreakEffect(e, a.bombRatio))
-                ) : a._stoneType >= 29 && a._stoneType <= 36 ? (
+                }else if(a._stoneType >= 29 && a._stoneType <= 36){
                     a.bombRatio--,
                     a.bombRatio <= 0 && (cc.director.container.colorCubeBreakEffect(e),
                     cc.director.container.removeBlock(e),
                     a.boxCubesDisappear())
-                ) : 37 == a._stoneType ? (
+                }else if( 37 == a._stoneType){
                     a.bombRatio--,
                     a.bombRatio <= 0 ? this.ladyBugCubesBreakEffect(e, a.bombRatio) : (this.ladyBugCubesBreakEffect(e, a.bombRatio),
                     a.hitLadyBugCubes())
-                ) : 39 == a._stoneType && (
+                }else if(39 == a._stoneType){
                     a.bombRatio--,
                     a.bombRatio <= 0 && (cc.director.container.rockStoneCubeBreakEffect(e),
                     cc.director.container.removeBlock(e),
                     a.boxCubesDisappear())
-                )
+                }
             }
         }
     },
@@ -1995,7 +2366,7 @@ cc.Class({
             1 == a.rocketType && this.row_rocket(e);
         }else if (t == psconfig.bType) {
             var o = utils.rainbowStarRemoveList(gameData.starMatrix, e);
-            cc.director.SoundManager.playSound("boom1"),
+            cc.director.SoundManager.playSound("boom1")
             this.removeBombBlockOnly(o)
         } else if (t == psconfig.dType) {
             var c = utils.getSameBlockList(gameData.starMatrix, e)
@@ -2062,52 +2433,74 @@ cc.Class({
         }, .5)
     },
     whichTimeTampRow: function() {
-        var e = this.node.getChildByName("rock")
-          , t = this.node.getChildByName("line");
-        e || t || cc.director.needWait ? (cc.director.isrunning = 1,
-        this.scheduleOnce(function() {
-            this.whichTimeTampRow("\u9012\u5f52")
-        }, .2)) : (this.tampRows(),
-        cc.director.isrunning = 0,
-        this.tempPos && (this.tempPos = null),
-        this.tempLadyBugList && (this.tempLadyBugList = null),
-        this.flowerTempList && (this.flowerTempList = null))
+        var rock = this.node.getChildByName("rock")
+        var line = this.node.getChildByName("line");
+        if(rock || line || cc.director.needWait){
+            cc.director.isrunning = 1,
+            this.scheduleOnce(function() {
+                this.whichTimeTampRow("\u9012\u5f52")
+            }, 0.2)
+        }else{
+            this.tampRows()
+            cc.director.isrunning = 0
+            this.tempPos && (this.tempPos = null)
+            this.tempLadyBugList && (this.tempLadyBugList = null)
+            this.flowerTempList && (this.flowerTempList = null)
+        }
     },
+   
     noticeWhichCubesCombine: function() {
+        // hiện tips
         var e = utils.noticeLongestList(gameData.starMatrix);
-        if (e)
-            for (var t = 0; t < e.length; t++) {
-                var n = e[t]
-                  , a = utils.indexValue(n.x, n.y)
-                  , o = gameData.starSprite[a];
-                if (this.noticeList.push(o),
-                o) {
-                    o.zIndex = 1,
-                    o.getChildByName("outLine").active = !0;
-                    var c = cc.sequence(cc.scaleTo(.5, .95), cc.scaleTo(1, 1.05), cc.scaleTo(.5, 1)).repeatForever();
-                    c.tag = 10,
-                    o.runAction(c)
+        if (e){
+            for (var i = 0; i < e.length; i++) {
+                var pos = e[i]
+                var indexValue = utils.indexValue(pos.x, pos.y)
+                var block = gameData.starSprite[indexValue];
+                this.noticeList.push(block)
+                if (block) {
+                    block.zIndex = 200
+                    block.getChildByName("outLine").active = true;
+                    var action = cc.sequence(
+                        cc.scaleTo(0.5, 0.95), 
+                        cc.scaleTo(1, 1.05), 
+                        cc.scaleTo(0.5, 1)
+                    ).repeatForever(); 
+              
+                    action.tag = 10
+                    block.runAction(action)
                 }
             }
+        }
     },
     noticePlayerTimeCount: function() {
-        this.noticeCount > 0 && (this.noticeCount--,
-        0 == this.noticeCount && (this.unschedule(this.noticePlayerTimeCount),
-        this.noticeWhichCubesCombine()))
+        if(this.noticeCount > 0){
+            this.noticeCount--
+            if(0 == this.noticeCount){
+                this.unschedule(this.noticePlayerTimeCount)
+                this.noticeWhichCubesCombine()
+            }
+        }
     },
     canclePlayerNotice: function() {
         if (this.noticeList && this.noticeList.length > 0){
-            for (var e = 0; e < this.noticeList.length; e++) {
-                var t = this.noticeList[e];
-                t && (t.getChildByName("outLine").active = !1,
-                t.stopActionByTag(10),
-                t.scale = 1,
-                t.zIndex = 0)
+            for (var i = 0; i < this.noticeList.length; i++) {
+                var block = this.noticeList[i];
+                if(block){
+                    block.getChildByName("outLine").active = false
+                    block.stopActionByTag(10)
+                    block.scale = 1
+                    block.zIndex = block.getComponent("block")._xPos
+                }
             }
         }
         this.noticeList = []
         this.noticeCount = 5
-        cc.director.getScheduler().isScheduled(this.noticePlayerTimeCount, this) || this.target.isGameEnd ? this.target.isGameEnd && this.unschedule(this.noticePlayerTimeCount) : this.schedule(this.noticePlayerTimeCount, 1)
+        if(cc.director.getScheduler().isScheduled(this.noticePlayerTimeCount, this) || this.target.isGameEnd){
+            this.target.isGameEnd && this.unschedule(this.noticePlayerTimeCount)
+        }else{
+            this.schedule(this.noticePlayerTimeCount, 1)
+        }
     },
     judgeGameMoveStatus: function() {
         return !(cc.game.GameMoveStatus > 0)
@@ -2120,9 +2513,7 @@ cc.Class({
     },
     test_addLevel: function() {     
         gameData.bestLevel++
-        cc.log("best level", gameData.bestLevel)
         this.startNewGame()
-
         //this.vibrate(15, 100)
         //boom 10 70 
         ///7 10

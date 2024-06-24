@@ -9,11 +9,13 @@ cc.Class({
     },
 
     effect: function() {
-        this.light.opacity = 200;
-        var e = cc.spawn(cc.scaleTo(.5, 2), cc.fadeOut(.5));
-        this.particle.resetSystem(), this.light.runAction(e)
+        this.node.active = true
+        this.light.opacity = 255;
+        var action = cc.spawn(cc.scaleTo(0.5, 2), cc.fadeOut(0.5));
+        this.particle.resetSystem()
+        this.light.runAction(action)
     },
     start: function() {
-        this.effect()
+        //this.effect()
     }
 });

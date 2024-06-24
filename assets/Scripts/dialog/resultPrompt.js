@@ -12,6 +12,7 @@ cc.Class({
         twinkle: cc.Node,
         targetDisplayList: [cc.Node],
         blockView: [cc.SpriteFrame],
+        subView: [cc.SpriteFrame],
         toolView: [cc.SpriteFrame],
         shadowClip: cc.AnimationClip,
         titleWin: cc.Node
@@ -62,7 +63,8 @@ cc.Class({
             var i = cc.spawn(cc.scaleTo(.3, 1), cc.moveTo(.3, cc.v2(0, 0)), cc.callFunc(function() {
                 cc.director.SoundManager.playSound("starEffect")
             }));
-            i.tag = 1, e.runAction(i)
+            i.tag = 1
+            e.runAction(i)
         }
     },
     addStarShadowAnima: function(e) {
@@ -74,17 +76,38 @@ cc.Class({
         this.score.string = gameData.currScore + ""
     },
     toolTargetDisPlay: function(e) {
-        for (var t = utils.computedNodeGap(e.length, this.targetContainer, this.targetDisplayList[0]), s = 0; s < e.length; s++) {
+        var t = utils.computedNodeGap(e.length, this.targetContainer, this.targetDisplayList[0])
+        for (var s = 0; s < e.length; s++) {
             var n = this.targetDisplayList[s];
             n.active = !0;
-            var a = n.getChildByName("icon");
+            var icon = n.getChildByName("icon");
+            var sub = n.getChildByName("sub");
             n.position = cc.v2(t * (s + 1) + n.width * s + n.width / 2, 0);
             var o = e[s][0];
-            o >= 20 ? 38 == o ? a.getComponent(cc.Sprite).spriteFrame = this.toolView[10] : 39 == o ? a.getComponent(cc.Sprite).spriteFrame = this.toolView[11] : 37 == o ? a.getComponent(cc.Sprite).spriteFrame = this.toolView[12] : (o -= 20, a.getComponent(cc.Sprite).spriteFrame = this.toolView[o]) : a.getComponent(cc.Sprite).spriteFrame = this.blockView[o]
+            sub.active = false
+            if( o >= 20){
+                if (o == 38) {
+                    icon.getComponent(cc.Sprite).spriteFrame = this.toolView[10]
+                } else if (o == 39) {
+                    icon.getComponent(cc.Sprite).spriteFrame = this.toolView[11]
+                } else if (o == 37) {
+                    icon.getComponent(cc.Sprite).spriteFrame = this.toolView[12]
+                } else{
+                    icon.getComponent(cc.Sprite).spriteFrame = this.toolView[o - 20]
+                }
+            }else{
+                icon.getComponent(cc.Sprite).spriteFrame = this.blockView[o]
+                if(o < 6){
+                    sub.active = true
+                    sub.getComponent(cc.Sprite).spriteFrame = this.subView[o]
+                }
+            }
         }
     },
     hideToolTargetList: function() {
-        for (var e = 0; e < this.targetDisplayList.length; e++) this.targetDisplayList[e].active = !1
+        for (var e = 0; e < this.targetDisplayList.length; e++){ 
+            this.targetDisplayList[e].active = !1
+        }
     },
     lightRotation: function(e) {
         var t = cc.rotateBy(2, 180).repeatForever();
@@ -108,7 +131,7 @@ cc.Class({
             gameData.bestLevel += 1
             //this.saveDataToServer()
             gameData.storeGameData();
-            cc.log("=====storeGameData====== updatePlayerSuccessLevel")
+            cc.log("=====storeGameData====== totalStar bestLevel")
         }
     },
     saveDataToServer(){

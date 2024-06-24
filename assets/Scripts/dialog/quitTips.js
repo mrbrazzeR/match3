@@ -11,7 +11,10 @@ cc.Class({
     hideView: function() {
         this.node.active = !1
         cc.director.dialogScript.hideAllChildrenNode()
-            cc.director.SoundManager.playSound("btnEffect")
+        cc.director.SoundManager.playSound("btnEffect")
+    },
+    showRetryPrompt(){
+
     },
     jumpToInterface: function() {
         cc.director.SoundManager.playSound("btnEffect") 
@@ -20,13 +23,10 @@ cc.Class({
         gameData.storeGameData()
         cc.director.dialogScript.hideAllChildrenNode()
         //cc.director.loadScene("interface")
-        cc.director.gameManager.setActive(1)
-        cc.director.jumpCode = 2
+       /*  cc.director.gameManager.setActive(1)
+        cc.director.jumpCode = 2 */
         this.node.active = !1
-        
-        /* cc.systemEvent.emit("STOP_TOUCH", {
-            number: 2
-        })  */ 
+        cc.director.dialogScript.showRetryPrompt()  
         
     },
             

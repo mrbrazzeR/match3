@@ -96,7 +96,7 @@
       "__uuid__": "a11f4539-877c-41e8-bcaf-68ea4103986c"
     },
     "_texture": null,
-    "_stopped": true,
+    "_stopped": false,
     "playOnLoad": true,
     "autoRemoveOnFinish": false,
     "totalParticles": 165,
@@ -106,9 +106,9 @@
     "lifeVar": 0.3,
     "_startColor": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 252,
-      "b": 198,
+      "r": 20,
+      "g": 143,
+      "b": 224,
       "a": 102
     },
     "_startColorVar": {
@@ -138,7 +138,7 @@
     "startSizeVar": 0,
     "endSize": 0,
     "endSizeVar": 0,
-    "startSpin": 720,
+    "startSpin": 20,
     "startSpinVar": 0,
     "endSpin": 0,
     "endSpinVar": 0,
@@ -182,7 +182,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "e4b4179a-f573-4632-8212-cec5016e2fc0"
     },
     "fileId": "",
     "sync": false

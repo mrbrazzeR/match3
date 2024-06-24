@@ -28,6 +28,7 @@ export default class levelNode extends cc.Component {
         }, this);
         this.node.on(cc.Node.EventType.MOUSE_DOWN, function () {
             this.startDragging();
+            this.onTouchStart()
             GlobalEvent.ISDRAGGING = true;
         }, this);
         this.node.on(cc.Node.EventType.MOUSE_UP, function () {

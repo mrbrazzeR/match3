@@ -30,7 +30,8 @@ cc.Class({
        // butterFly: cc.Prefab,
         btn_farmEnter: cc.Node,
         list_farmEnter: [cc.SpriteFrame],
-        editBox: cc.EditBox
+        editBox: cc.EditBox,
+        testNode: cc.Node
     },
     onLoad: function() {
         ////
@@ -55,7 +56,7 @@ cc.Class({
     start(){ 
         var _this = this;
         cc.systemEvent.on("LOADED_FB", function(event) {
-            console.log("LOADED_FB"); // Output: Hello, world!
+            console.log("LOADED_FB"); 
             _this.loadGameData()  
         });
         this.onLoadBundle()
@@ -251,122 +252,131 @@ cc.Class({
         }
     },
     loadGameData: function() {
-        var _this = this
-        cc.systemEvent.emit("LOADING_SHOW");
-      
-        /* cc.director.ServerManager.requestData(
-            'getUser',
-            'POST',     
-            {
-                "idUser": gameData.idUser,
-                "avatar": gameData.avatar,
-                "name": gameData.name,
-            }
-        ).then(function(res){
-            cc.director.gameLoadingSuccess = true
-            if(res){             */
-                //cc.log("getUser",res)
-                //gameData.bestLevel = res.bestLevel 
-                if(!cc.director.FbManager.IS_FB_INSTANT){
-                    var e = cc.sys.localStorage.getItem("starGameData")
-                    if(e){
-                        gameData.overlapGameData(JSON.parse(e))  
-                        cc.director.gameLoadingSuccess = true
-                        _this.initMainScreen()
-                    }else{
-                        gameData.initAllGameData()
-                        cc.director.gameLoadingSuccess = true
-                        _this.initMainScreen()
-                    }
-                }else{
-                    if(gameData.starGameData){
-                        gameData.overlapGameData(gameData.starGameData)
-                    }else{
-                        gameData.initAllGameData()
-                    }
-                    cc.director.gameLoadingSuccess = true
-                    FBInstant.getTournamentAsync()
-                    .then(function(tournament) {
-                        if(tournament != null){
-                            if(tournament.getPayload() != null){
-                                var type = cc.director.FbManager.getContextSizeType()
-                                cc.log("===========context Type: ", type)
-                                cc.log("tournament getPayload",tournament.getPayload())               
-                                var payload = JSON.parse(tournament.getPayload())
-                                if(payload == null){                
-                                    //{"tournament":{"ref":"User create","time":"2024-06-01T06:44:56.965Z","level":1}}
-                                    _this.initMainScreen()
-                                    /* var a = i.getEndTime()
-                                          , c = Date.now() / 1e3; */
-                                }else{
-                                    gameData.tournamentData = payload.tournament
-                                    //{"tournament":{"ref":"User create","time":"2024-06-01T06:44:56.965Z","level":1}}
-                                    _this.initMainScreen()
-                                }                            
-                            }else{
-                                _this.initMainScreen()
-                            }                           
+        try {
+            var _this = this
+            cc.systemEvent.emit("LOADING_SHOW");
+        
+            /* cc.director.ServerManager.requestData(
+                'getUser',
+                'POST',     
+                {
+                    "idUser": gameData.idUser,
+                    "avatar": gameData.avatar,
+                    "name": gameData.name,
+                }
+            ).then(function(res){
+                cc.director.gameLoadingSuccess = true
+                if(res){             */
+                    //cc.log("getUser",res)
+                    //gameData.bestLevel = res.bestLevel 
+                    if(!cc.director.FbManager.IS_FB_INSTANT){
+                        var e = cc.sys.localStorage.getItem("starGameData")
+                        if(e){
+                            gameData.overlapGameData(JSON.parse(e))  
+                            cc.director.gameLoadingSuccess = true
+                            _this.initMainScreen()
                         }else{
+                            gameData.initAllGameData()
+                            cc.director.gameLoadingSuccess = true
                             _this.initMainScreen()
                         }
-                           
-                    }).catch((err)=>{
-                        cc.log(err)
-                        _this.initMainScreen()
-                    })
+                    }else{
+                        if(gameData.starGameData){
+                            gameData.overlapGameData(gameData.starGameData)
+                        }else{
+                            gameData.initAllGameData()
+                        }
+                        cc.director.gameLoadingSuccess = true
+                        FBInstant.getTournamentAsync().then(function(tournament) {
+                            if(tournament != null){
+                                if(tournament.getPayload() != null){
+                                    var type = cc.director.FbManager.getContextSizeType()
+                                    cc.log("===========context Type: ", type)
+                                    cc.log("tournament getPayload",tournament.getPayload())               
+                                    var payload = JSON.parse(tournament.getPayload())
+                                    if(payload == null){                
+                                        //{"tournament":{"ref":"User create","time":"2024-06-01T06:44:56.965Z","level":1}}
+                                        _this.initMainScreen()
+                                        /* var a = i.getEndTime()
+                                            , c = Date.now() / 1e3; */
+                                    }else{
+                                        gameData.tournamentData = payload.tournament
+                                        //{"tournament":{"ref":"User create","time":"2024-06-01T06:44:56.965Z","level":1}}
+                                        _this.initMainScreen()
+                                    }                            
+                                }else{
+                                    _this.initMainScreen()
+                                }                           
+                            }else{
+                                _this.initMainScreen()
+                            }
+                            
+                        }).catch((err)=>{
+                            cc.log(err)
+                            _this.initMainScreen()
+                        })
+                        
+                    }   
                     
-                }   
-                
-   /*          }         
-        }).catch(function(error){                              
-            cc.log("err",error)   
-            gameData.initAllGameData()
-            cc.director.gameLoadingSuccess = true
-            _this.initMainScreen()        
-        });   */     
+            /*          }         
+            }).catch(function(error){                              
+                cc.log("err",error)   
+                gameData.initAllGameData()
+                cc.director.gameLoadingSuccess = true
+                _this.initMainScreen()        
+            });   */     
+        } catch (error) {
+            console.log(error)
+        }
+        
     },
   
     initMainScreen(){      
-        cc.systemEvent.emit("LOADDING_HIDE");
-        this.life = 5
-        this.headers.init()
-        //this.setFarmEnterBtn()
-        this.updateNextOpenLevel()
-        this.updateBlueBoxStarNumber()
-        this.showBoxArea()
-        this.nextStage.string = gameData.bestLevel + 1 + ""
-        this.systemLoginTimes()
-        this.judgeHasHair()
-        this.isShowLotteryBtn()
-        this.isShowCloud()
-        if(gameData.tournamentData){
-            cc.director.gameManager.setActive(2)       
-            cc.director.jumpCode = 1
-            cc.director.container.startNewGame()
-            if (gameData.passRate >= 1) {         
-                gameData.currentStar += gameData.passRate
-                gameData.passRate = -1;
-                gameData.storeGameData();
-                cc.log("=====storeGameData===== passRate currentStar")
-            }
-        }else{
-            if(cc.director.FbManager.IS_FB_INSTANT){
-                this.subcribeBot()
-            }        
-            if (gameData.passRate >= 1) {         
-                if (gameData.bestLevel >= 1) {
-                    //cc.log("==========sadasdasdasd")
-                    // Gửi sự kiện dừng chạm và bắt đầu hoạt ảnh ngôi sao
-                    cc.systemEvent.emit("STOP_TOUCH", { number: 1 });
-                    cc.systemEvent.emit("STARANIMA", { passRate: gameData.passRate });
+        try {
+            cc.systemEvent.emit("LOADDING_HIDE");
+            this.life = 5
+            this.headers.init()
+            //this.setFarmEnterBtn()
+            this.updateNextOpenLevel()
+            this.updateBlueBoxStarNumber()
+            this.showBoxArea()
+            this.nextStage.string = gameData.bestLevel + 1 + ""
+            this.systemLoginTimes()
+            this.judgeHasHair()
+            this.isShowLotteryBtn()
+            this.isShowCloud()
+            if(gameData.tournamentData){
+                cc.director.gameManager.setActive(2)       
+                cc.director.jumpCode = 1
+                cc.director.container.startNewGame()
+                if (gameData.passRate >= 1) {         
+                    gameData.currentStar += gameData.passRate
+                    gameData.passRate = -1;
+                    gameData.storeGameData();
+                    cc.log("=====storeGameData===== passRate currentStar")
                 }
-                // Đặt lại tỷ lệ hoàn thành và lưu dữ liệu trò chơi
-                gameData.currentStar += gameData.passRate
-                gameData.passRate = -1;
-                gameData.storeGameData();
-                cc.log("=====storeGameData===== passRate currentStar")
+            }else{
+                if(cc.director.FbManager.IS_FB_INSTANT){
+                    this.subcribeBot()
+                }        
+                if (gameData.passRate >= 1) {         
+                    if (gameData.bestLevel >= 1) {
+                        //cc.log("==========sadasdasdasd")
+                        // Gửi sự kiện dừng chạm và bắt đầu hoạt ảnh ngôi sao
+                        cc.systemEvent.emit("STOP_TOUCH", { number: 1 });
+                        cc.systemEvent.emit("STARANIMA", { passRate: gameData.passRate });
+                    }
+                    // Đặt lại tỷ lệ hoàn thành và lưu dữ liệu trò chơi
+                    gameData.currentStar += gameData.passRate
+                    gameData.passRate = -1;
+                    gameData.storeGameData();
+                    cc.log("=====storeGameData===== passRate currentStar")
+                }
             }
+        } catch (error) {
+            console.log(error)
         }
+        
     },
 
     preloadScene(){
@@ -410,12 +420,9 @@ cc.Class({
     stopTouchOperate: function(e) {
         var t = e.number;
         if (t == 1) {
-            // Nếu số là 1, kích hoạt mặt nạ màn hình
             this.screenMask.active = true;
         } else if (t == 2) {
-            // Nếu số là 2, hủy kích hoạt mặt nạ màn hình
             this.screenMask.active = false;
-            // Kiểm tra nếu cấp độ tốt nhất là 4 và không có hướng dẫn xổ số
             if (gameData.bestLevel == 4 && !gameData.lotteryGuide01) {
                 cc.systemEvent.emit("LOTTERY_GUIDE");
             }
@@ -683,12 +690,14 @@ cc.Class({
         e.getComponent(cc.Animation).play("lotteryIconAnima")
     },
     debugBtn: function() {
-        for (var e = 0; e < 4; e++){
+         for (var e = 0; e < 4; e++){
             gameData.changeGameTool("playerTool", 10, e, true);
             cc.log("storeGameData changeGameTool")     
         }
         gameData.starCount += 10000
-        gameData.storeGameData()
+        gameData.storeGameData() 
+        cc.systemEvent.emit("UPDATE_COINS")
+       
     },
     jumpToFarm: function() {
          cc.director.gameLoadingSuccess ? (

@@ -3,10 +3,10 @@
   "_name": "tool_disco",
   "_objFlags": 0,
   "_native": "",
-  "_duration": 4.033333333333333,
+  "_duration": 1.55,
   "sample": 60,
   "speed": 1,
-  "wrapMode": 1,
+  "wrapMode": 2,
   "curveData": {
     "comps": {
       "cc.Sprite": {
@@ -66,7 +66,7 @@
             }
           },
           {
-            "frame": 4.016666666666667,
+            "frame": 1.5333333333333334,
             "value": {
               "__uuid__": "9a21927d-f48d-495e-b432-de6344220642"
             }

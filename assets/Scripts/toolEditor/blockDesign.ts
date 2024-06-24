@@ -88,7 +88,11 @@ export default class blockDesign extends cc.Component {
                 else if (e == 38) {
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[9];
                 }
-
+                else if (e == 40) {
+                    this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[12];
+                } else if (e == 41) {
+                    this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[13];
+                }
                 else {
                     // Hinder view for other special types
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[e - 20];
@@ -132,9 +136,9 @@ export default class blockDesign extends cc.Component {
     }
 
     onTouchStart() {
+        console.log(this._stoneType)
         var sprite = this.view.getComponent(cc.Sprite).spriteFrame;
         cc.systemEvent.emit('BLOCKCLICK', { id: this._stoneType, img: sprite });
-
     }
 
     // ... (các phương thức khác giữ nguyên)

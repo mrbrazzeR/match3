@@ -8,6 +8,7 @@ cc.Class({
         outLine: cc.Node,
         temp: cc.Node,
         view: cc.Node,
+        tips: cc.Node,
         _xPos: 0,
         _yPos: 0,
         _stoneNum: 0,
@@ -18,17 +19,11 @@ cc.Class({
         bombRatio: -1,
         nextType: -1,
         viewList: [cc.SpriteFrame],
+        subsList: [cc.SpriteFrame],
         rocketList: [cc.SpriteFrame],
         discoList: [cc.SpriteFrame],
         hinderView: [cc.SpriteFrame],
-        tipsView_2: [cc.SpriteFrame],
-        tipsView_4: [cc.SpriteFrame],
-        tipsView_8: [cc.SpriteFrame],
-        tipsView_16: [cc.SpriteFrame],
-        tipsView_32: [cc.SpriteFrame],
-        tipsView_64: [cc.SpriteFrame],
-        tipsView_128: [cc.SpriteFrame],
-        tipsView_256: [cc.SpriteFrame],
+        tipsView: [cc.SpriteFrame],
         combineView: [cc.SpriteFrame],
         colorCubeViewList: [cc.SpriteFrame],
         boxCubesHitView: [cc.SpriteFrame],
@@ -39,189 +34,249 @@ cc.Class({
         windmillOutlineLight: cc.Node,
         ladyBug: cc.Prefab,
         vine: cc.SpriteFrame,
-        toolAnima: cc.Node
+        toolAnima: cc.Node,
+        toolCombine: cc.Node
     },
 
-    onLoad: function() {},
-    initStoneView: function(e, t, i, s) {
-        this.changeStoneGrid(e, t),
-        this.changeStoneNum(i, s)
+    initStoneView: function(x, y, type, s) {
+        this.node.scale = 1
+        this.changeStoneGrid(x, y)
+        this.changeStoneNum(type, s)  
+        this.node.getChildByName("lbIndex").getComponent(cc.Label).string = this.node.zIndex
     },
-    updateTipsView: function(e) {
-        var t;
-        0 == this._stoneType && (t = this.tipsView_2[e]),
-        1 == this._stoneType && (t = this.tipsView_4[e]),
-        2 == this._stoneType && (t = this.tipsView_8[e]),
-        3 == this._stoneType && (t = this.tipsView_16[e]),
-        4 == this._stoneType && (t = this.tipsView_32[e]),
-        5 == this._stoneType && (t = this.tipsView_64[e]),
-        6 == this._stoneType && (t = this.tipsView_128[e]),
-        7 == this._stoneType && (t = this.tipsView_256[e]),
-        this.view.getComponent(cc.Sprite).spriteFrame = t
+    changeStoneGrid: function(x, y) {
+        this._xPos = x
+        this._yPos = y
+        if(this._stoneType != 26 && this._stoneType != 27){
+            this.node.zIndex = x   
+            
+        }
+        this.node.getChildByName("lbIndex").getComponent(cc.Label).string = this.node.zIndex
     },
-    originView: function() {
-        this.view.getComponent(cc.Sprite).spriteFrame = this.viewList[this._stoneType]
-    },
-    changeStoneNum: function(e, t) {
-        // Set the stone type
-        this._stoneType = e;
-        if (e >= 0) {
+    changeStoneNum: function(type, discoType) {
+        this._stoneType = type;
+        if (type >= 0) {
+            this.tips.active = false
             this._stoneNum = Math.pow(2, this._stoneType + 1);
-
-            // Check for specific stone types and apply corresponding logic
-            if (e == psconfig.rType) {
-                // Rocket type
+            if (type == psconfig.rType) {// Rocket type          
                 this.rocketType = this.randomCreateRocketType();
                 this.view.getComponent(cc.Sprite).spriteFrame = this.rocketList[this.rocketType];
-            } else if (e == psconfig.dType) {
-                // Disco type
-                this.discoType = t <= 5 ? t : this.randomCreateDiscoType();
+            } else if (type == psconfig.dType) {// Disco type             
+                this.discoType = discoType <= 5 ? discoType : this.randomCreateDiscoType();
                 this.view.getComponent(cc.Sprite).spriteFrame = this.discoList[this.discoType];
-            } else if (e == psconfig.bType) {
-                // Some other type (possibly a bomb)
+            } else if (type == psconfig.bType) {//Boom type
                 this.view.active = false;
                 this.playToolAnima(2);
-            } else if (e >= 20) {
+            } else if (type >= 20) {
                 // Various special types
-                if (e == 22) {
+                if (type == 22) {
                     // Vine type
                     this.lock_func.active = true;
                     this.lock_func.getComponent(cc.Sprite).spriteFrame = this.vine;
                     this.nextType = this.randomCreateDiscoType();
                     this.bombRatio = 1;
                     this.view.getComponent(cc.Sprite).spriteFrame = this.viewList[this.nextType];
-                } else if (e >= 23 && e <= 25) {
+                } else if (type >= 23 && type <= 25) {
                     // Box cubes types
-                    if (e == 23) this.initBoxCubesData(3);
-                    if (e == 24) this.initBoxCubesData(2);
-                    if (e == 25) this.initBoxCubesData(1);
-                } else if (e == 26) {
+                    if (type == 23) this.initBoxCubesData(3);
+                    if (type == 24) this.initBoxCubesData(2);
+                    if (type == 25) this.initBoxCubesData(1);
+                } else if (type == 26) {
                     // Flower cubes type
                     this.initFlowerCubesData();
-                } else if (e == 27) {
+                } else if (type == 27) {
                     // Windmill type
                     this.initWindmill(3);
-                } else if (e >= 29 && e <= 36) {
+                } else if (type >= 29 && type <= 36) {
                     // Colorful cubes types
-                    this.initColorfulCubes(1, e - 29);
-                } else if (e == 37) {
+                    this.initColorfulCubes(1, type - 29);
+                } else if (type == 37) {
                     // Ladybug cubes type
                     this.initLadyBugCubes(3);
-                } else if (e == 39) {
+                } else if (type == 39) {
                     // Rock stone type
                     this.initRockStone(1);
+                }else if (type == 40) {
+                    // Rock stone type
+                    this.initLockAvarta();
                 } else {
                     // Hinder view for other special types
-                    this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[e - 20];
+                    this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[type - 20];
                 }
             } else {
                 // Default case for other types
-                this.view.getComponent(cc.Sprite).spriteFrame = this.viewList[e];
-           
+                this.view.getComponent(cc.Sprite).spriteFrame = this.viewList[type];
+                if(type < 6){
+                    this.tips.active = true
+                    this.tips.getComponent(cc.Sprite).spriteFrame = this.subsList[type]
+                }else{
+                    this.tips.active = false
+                }
             }
         } else {
             // If the stone type is invalid, set the sprite frame to null
             this.view.getComponent(cc.Sprite).spriteFrame = null;
+            this.tips.getComponent(cc.Sprite).spriteFrame = null;
         }
     },
+    updateTipsView: function(type) {
+        if(type < 6){
+            this.tips.active = true
+            this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsView[type]
+        }else{
+            this.tips.active = false
+        }
+        
+    },
+    originView: function() {
+        this.view.getComponent(cc.Sprite).spriteFrame = this.viewList[this._stoneType]
+        if(this._stoneType < 6){
+            this.tips.active = true
+            this.tips.getComponent(cc.Sprite).spriteFrame = this.subsList[this._stoneType]
+        }else{
+            this.tips.active = false
+        }
+    },
+    
     cubesUnlock: function() {
-        this.bombRatio <= 0 && (this.bombRatio = -1,
-        this.lock_func.active = !1,
-        gameData.starMatrix[this._xPos][this._yPos] = this.nextType,
-        this.changeStoneNum(this.nextType),
-        this.nextType = -1)
+        if(this.bombRatio <= 0){
+            this.bombRatio = -1
+            this.lock_func.active = false
+            gameData.starMatrix[this._xPos][this._yPos] = this.nextType
+            this.changeStoneNum(this.nextType)
+            this.nextType = -1
+        }
     },
     boxCubesDisappear: function() {
-        this.bombRatio = -1,
-        gameData.starMatrix[this._xPos][this._yPos] = -1,
+        this.bombRatio = -1
+        gameData.starMatrix[this._xPos][this._yPos] = -1
         this.node.removeFromParent()
     },
     blockDataReset: function() {
-        this.bombRatio = -1,
+        this.bombRatio = -1
         gameData.starMatrix[this._xPos][this._yPos] = -1
     },
     boxHit: function() {
-        this.bombRatio > 0 ? this.lock_func.getComponent(cc.Sprite).spriteFrame = this.boxCubesHitView[this.bombRatio - 2] : 0 == this.bombRatio && (this.lock_func.active = !1),
+        if(this.bombRatio > 0){
+            this.lock_func.getComponent(cc.Sprite).spriteFrame = this.boxCubesHitView[this.bombRatio - 2]
+        }else if(0 == this.bombRatio){
+            this.lock_func.active = false           
+        }
         this.cubeRotation(this.node, 1003)
     },
     initBoxCubesData: function(e) {
-        this.bombRatio = e,
-        this.lock_func.active = !0,
-        e - 2 < 0 ? this.lock_func.active = !1 : this.lock_func.getComponent(cc.Sprite).spriteFrame = this.boxCubesHitView[this.bombRatio - 2],
+        this.bombRatio = e
+        this.lock_func.active = true
+        if(e - 2 < 0){
+            this.lock_func.active = false
+        }else{ 
+            this.lock_func.getComponent(cc.Sprite).spriteFrame = this.boxCubesHitView[this.bombRatio - 2]
+        }
         this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[3]
     },
     initFlowerCubesData: function() {
-        this.view.active = !1,
-        this.flower.active = !0,
-        this.lock_func.active = !1,
-        this.plant.getChildByName("petal").active = !1,
+        this.view.active = false
+        this.flower.active = true
+        this.lock_func.active = false
+        this.plant.getChildByName("petal").active = false
         this.bombRatio = 4
+        this.node.zIndex = 200;
     },
     flowerHit: function() {
-        var e = this
-            , t = this.plant.getChildByName("petal");
-        t.active = !0,
+        var _this = this
+        var t = this.plant.getChildByName("petal");
+        t.active = true
         t.stopActionByTag(1002);
         var i = "item" + (4 - this.bombRatio)
-            , s = t.getChildByName(i);
-        this.node.zIndex = 1;
-        var n = cc.sequence(cc.sequence(cc.scaleTo(.2, .8), cc.scaleTo(.2, 1.2)).repeat(2), cc.scaleTo(.15, 1.5).easing(cc.easeBackOut(3)), cc.rotateBy(.3, 90), cc.spawn(cc.scaleTo(.25, 1).easing(cc.easeBackOut(3)), cc.callFunc(function() {
-            s.active = !0,
-            e.node.zIndex = 0
-        })));
-        n.tag = 1002,
-        this.plant.runAction(n)
+        var s = t.getChildByName(i);
+        this.node.zIndex = 500;
+        cc.log("ssssssssssssssssssss")
+        var action = cc.sequence(
+            cc.sequence(cc.scaleTo(0.2, 0.8), cc.scaleTo(0.2, 1.2)).repeat(2),
+            cc.scaleTo(0.15, 1.5).easing(cc.easeBackOut(3)),
+            cc.rotateBy(0.3, 90),
+            cc.spawn(cc.scaleTo(0.25, 1).easing(cc.easeBackOut(3)), 
+            cc.callFunc(function() {
+                s.active = true
+                _this.node.zIndex = 200
+            })
+        ));
+        action.tag = 1002
+        this.plant.runAction(action)
     },
     collectFlower: function() {
-        this.bombRatio = -1,
-        gameData.starMatrix[this._xPos][this._yPos] = -1,
+        this.bombRatio = -1
+        gameData.starMatrix[this._xPos][this._yPos] = -1
         this.node.removeFromParent()
     },
     initWindmill: function(e) {
-        this.bombRatio = e,
-        this.lock_func.active = !0,
-        e - 2 < 0 ? this.lock_func.active = !1 : this.lock_func.getComponent(cc.Sprite).spriteFrame = this.windmillNetView[this.bombRatio - 2],
+        this.node.zIndex = 200
+        this.bombRatio = e
+        this.lock_func.active = true
+        if(e - 2 < 0){
+            this.lock_func.active = false
+        }else{
+            this.lock_func.getComponent(cc.Sprite).spriteFrame = this.windmillNetView[this.bombRatio - 2]
+        }
         this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[4]
     },
     hitWindmill: function() {
-        this.bombRatio > 0 ? (this.lock_func.getComponent(cc.Sprite).spriteFrame = this.windmillNetView[this.bombRatio - 2],
-        1 == this.bombRatio ? (this.windmillOutlineLight.active = !0,
-        this.node.zIndex = 1,
-        this.node.runAction(cc.rotateBy(5, 360).repeatForever()),
-        59 == gameData.bestLevel && (
-            gameData.guide_step.eleven_step || cc.systemEvent.emit("WINDMILL_SECOND_GUIDE", {
-            windmillList: [cc.v2(this._xPos, this._yPos)]
-        }))) : this.windmillRotation(this.view, 1002)) : 0 == this.bombRatio && (this.lock_func.active = !1)
+        if(this.bombRatio > 0){
+            this.lock_func.getComponent(cc.Sprite).spriteFrame = this.windmillNetView[this.bombRatio - 2]
+            if(1 == this.bombRatio){
+                this.windmillOutlineLight.active = true
+                this.node.zIndex = 200
+                this.node.runAction(cc.rotateBy(5, 360).repeatForever())
+                if(59 == gameData.bestLevel){
+                    if(!gameData.guide_step.eleven_step) {
+                        cc.systemEvent.emit("WINDMILL_SECOND_GUIDE", {
+                            windmillList: [cc.v2(this._xPos, this._yPos)]
+                        })
+                    }
+                }
+            }else{
+                this.windmillRotation(this.view, 1002)
+            }
+        }else if(0 == this.bombRatio){
+            this.lock_func.active = false
+        }
     },
     windmillRotation: function(e, t) {
         e.stopActionByTag(t);
         var i = cc.rotateBy(1, 360);
-        i.tag = t,
+        i.tag = t
         e.runAction(i)
     },
+    initLockAvarta: function() {
+        this.bombRatio = 10
+        this.lock_func.active = false
+        this.view.getComponent(cc.Sprite).spriteFrame = null
+    },
     initColorfulCubes: function(e, t) {
-        this.bombRatio = e,
-        this.nextType = t,
-        this.lock_func.active = !1,
-        "number" == typeof this.nextType && (this.view.getComponent(cc.Sprite).spriteFrame = this.colorCubeViewList[this.nextType])
+        this.bombRatio = e
+        this.nextType = t
+        this.lock_func.active = false
+        if("number" == typeof this.nextType){
+            this.view.getComponent(cc.Sprite).spriteFrame = this.colorCubeViewList[this.nextType]
+        }
     },
     initLadyBugCubes: function(e) {
-        this.bombRatio = e,
-        this.lock_func.active = !1,
-        this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[5],
-        this.temp.active = !0;
-        var t = cc.instantiate(this.ladyBug);
-        t.parent = this.temp,
-        t.getComponent(cc.Animation).play("ladyBugChaos")
+        this.bombRatio = e
+        this.lock_func.active = false
+        this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[5]
+        this.temp.active = true;
+        var ladyBug = cc.instantiate(this.ladyBug);
+        ladyBug.parent = this.temp
+        ladyBug.getComponent(cc.Animation).play("ladyBugChaos")
     },
     initRockStone: function(e) {
-        this.bombRatio = e,
-        this.lock_func.active = !1,
+        this.bombRatio = e
+        this.lock_func.active = false
         this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[6]
     },
     hitLadyBugCubes: function() {
-        cc.director.SoundManager.playSound("glassBallBreak"),
-        this.view.getComponent(cc.Sprite).spriteFrame = this.ladyBugBubbleView[this.bombRatio - 1],
+        cc.director.SoundManager.playSound("glassBallBreak")
+        this.view.getComponent(cc.Sprite).spriteFrame = this.ladyBugBubbleView[this.bombRatio - 1]
         this.cubeRotation(this.node, 1003)
     },
     randomCreateRocketType: function() {
@@ -234,140 +289,168 @@ cc.Class({
     randomGetItemType: function(e) {
         return !!(e && e.length > 0) && e[Math.floor(Math.random() * e.length)]
     },
-    changeStoneGrid: function(e, t) {
-        this._xPos = e,
-        this._yPos = t
-    },
+   
     nodeRotation: function(e, t) {
         var i = this
-            , s = cc.sequence(cc.sequence(cc.rotateBy(.05, 20), cc.rotateBy(.05, -20)).repeat(2), cc.callFunc(function() {
+        var s = cc.sequence(cc.sequence(cc.rotateBy(.05, 20), cc.rotateBy(.05, -20)).repeat(2), cc.callFunc(function() {
             i.node.angle = -0
         }));
-        s.tag = t,
+        s.tag = t
         e.runAction(s)
     },
     cubeRotation: function(e, t) {
-        var i = cc.sequence(cc.spawn(cc.sequence(cc.rotateBy(.05, 20), cc.rotateBy(.05, -20)).repeat(2), cc.scaleTo(.2, 1.2)), cc.scaleTo(.2, 1), cc.callFunc(function() {
-            e.angle = -0
-        }));
-        i.tag = t,
+        var i = cc.sequence(
+            cc.spawn(cc.sequence(cc.rotateBy(0.05, 20), cc.rotateBy(.05, -20)).repeat(2), cc.scaleTo(0.2, 1.2)), 
+            cc.scaleTo(0.2, 1), 
+            cc.callFunc(function() {
+                e.angle = -0
+            })
+        );
+        i.tag = t
         e.runAction(i)
     },
     onTouchStart: function() {
         if (!(cc.director.isMoving || cc.director.container.target.stepCount <= 0 || cc.director.isrunning))
-            if (-2 != this._stoneType && -1 != this._stoneType && cc.director.SoundManager.playSound("tap"),
-            this._stoneType < psconfig.rType) {
-                cc.director.isMoving = !0;
-                var e = cc.v2(this._xPos, this._yPos)
-                    , t = utils.needRemoveList(gameData.starMatrix, e);
+            if(this._stoneType != -2 &&  this._stoneType != -1)  {
+                cc.director.SoundManager.playSound("tap")
+            }
+            if (this._stoneType < psconfig.rType) { //< 8
+                cc.director.isMoving = true;
+                var pos = cc.v2(this._xPos, this._yPos)            
                 if (cc.director.toolType > 0) {
-                    if (-2 == this._stoneType)
-                        return void (cc.director.isMoving = !1);
-                    var a = cc.director.toolType
-                        , o = cc.v2(this._xPos, this._yPos)
-                        , c = this.node.parent.convertToWorldSpaceAR(utils.grid2Pos(o.x, o.y));
+                    if (this._stoneType == -2){
+                        return void (cc.director.isMoving = false);
+                    }
+                    var toolType = cc.director.toolType
+                    var wp = this.node.parent.convertToWorldSpaceAR(utils.grid2Pos(pos.x, pos.y));
                     cc.systemEvent.emit("TOOL_TRANS_EFFECT", {
-                        type: a,
-                        grid: o,
-                        wp: c
+                        type: toolType,
+                        grid: pos,
+                        wp: wp
                     })
-                } else
-                    t.length > 1 ? cc.systemEvent.emit("REMOVE_CUBES", {
-                        detail: t
-                    }) : (this.nodeRotation(this.node, 2),
-                    cc.director.isMoving = !1,
-                    utils.getItemAdjacentPos(e),
-                    -2 != this._stoneType && -1 != this._stoneType && cc.director.SoundManager.playSound("noCombine"))
+                } else{
+                    var needRemoveList = utils.needRemoveList(gameData.starMatrix, pos);
+                    if(needRemoveList.length > 1){
+                        cc.systemEvent.emit("REMOVE_CUBES", {
+                            detail: needRemoveList
+                        })
+                    }else{
+                        this.nodeRotation(this.node, 2)
+                        cc.director.isMoving = false
+                        utils.getItemAdjacentPos(pos)
+                        if(this._stoneType != -2 && this._stoneType != -1){
+                            cc.director.SoundManager.playSound("noCombine")
+                        }
+                    }
+                  
+                }
             } else {
                 if (cc.director.toolType > 0) {
                     if (cc.director.toolType <= 3) {
-                        if (this._stoneType >= 8 && this._stoneType <= 10 || 3 == cc.director.toolType && 20 == this._stoneType)
+                        if (this._stoneType >= 8 && this._stoneType <= 10 || 3 == cc.director.toolType && 20 == this._stoneType){
                             return;
-                        var r = cc.director.toolType
-                            , d = cc.v2(this._xPos, this._yPos)
-                            , l = this.node.parent.convertToWorldSpaceAR(utils.grid2Pos(d.x, d.y));
+                        }
+                        var toolType = cc.director.toolType
+                        var pos = cc.v2(this._xPos, this._yPos)
+                        var wp = this.node.parent.convertToWorldSpaceAR(utils.grid2Pos(pos.x, pos.y));
                         cc.systemEvent.emit("TOOL_TRANS_EFFECT", {
-                            type: r,
-                            grid: d,
-                            wp: l
+                            type: toolType,
+                            grid: pos,
+                            wp: wp
                         })
                     }
-                    return
+                    return;
                 }
-                if (this._stoneType >= 20)
-                    this.nodeRotation(this.node, 3),
-                    cc.director.isMoving = !1,
+                if (this._stoneType >= 20){
+                    this.nodeRotation(this.node, 3)
+                    cc.director.isMoving = false
                     cc.director.SoundManager.playSound("noCombine");
-                else {
-                    var h;
-                    cc.systemEvent.emit("STEP_COUNT"),
-                    this._stoneType == psconfig.rType ? h = this.rocketType : this._stoneType == psconfig.dType && (h = this.discoType);
-                    var p = {
+                }else {
+                    var type;
+                    cc.systemEvent.emit("STEP_COUNT")
+                    if(this._stoneType == psconfig.rType){
+                        type = this.rocketType
+                    }else if(this._stoneType == psconfig.dType){
+                        type = this.discoType
+                    }
+                    var obj = {
                         index: this._stoneType,
-                        type: h,
+                        type: type,
                         grid: cc.v2(this._xPos, this._yPos)
                     };
                     cc.systemEvent.emit("GAME_TOOL", {
-                        detail: p
+                        detail: obj
                     })
                 }
             }
     },
-    unuse: function() {
-        if (this.node.off(cc.Node.EventType.TOUCH_END, this.onTouchStart, this),
-        this.node.stopAllActions(),
-        this.node.angle = -0,
-        this.node.zIndex = 0,
-        this._stoneType = -1,
-        this.outLine.active = !1,
-        this.lock_func.active = !1,
-        this.windmillOutlineLight.active = !1,
-        this.toolAnima.active = !1,
-        this.view.angle = -0,
-        this.flower.active) {
-            for (var e = this.plant.getChildByName("petal").children, t = 0; t < e.length; t++)
-                e[t].active = !1;
-            this.flower.active = !1
+    unuse: function() { //bỏ sử dụng
+        this.node.off(cc.Node.EventType.TOUCH_END, this.onTouchStart, this)
+        this.node.stopAllActions()
+        this.node.angle = -0
+        this._stoneType = -1
+        this.outLine.active = false
+        this.lock_func.active = false
+        this.windmillOutlineLight.active = false
+        this.toolAnima.active = false
+        this.view.angle = -0
+        if (this.flower.active) {
+            var e = this.plant.getChildByName("petal").children
+            for (var t = 0; t < e.length; t++){
+                e[t].active = false;
+            }
+            this.flower.active = false
         }
-        this.temp.active && (this.temp.active = !1,
-        this.temp.removeAllChildren(),
-        this.view.active = !1,
-        this.view.stopAllActions(),
-        this.view.angle = -0)
+        this.temp.active && (
+            this.temp.active = false,
+            this.temp.removeAllChildren(),
+            this.view.active = false,
+            this.view.stopAllActions(),
+            this.view.angle = -0
+        )
     },
-    reuse: function() {
-        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchStart, this),
-        this.node.scale = .2,
-        this.node.stopActionByTag(1),
-        this.node.angle = -0,
-        this.view.active = !0,
-        this.node.runAction(cc.spawn(cc.scaleTo(.3, 1), cc.fadeIn(.1)))
+    reuse: function() { /// tái sử dụng
+        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchStart, this)
+        //this.node.scale = 0.2
+        this.node.stopActionByTag(1)
+        this.node.angle = -0
+        this.view.active = true
+        //this.node.runAction(cc.spawn(cc.scaleTo(0.3, 1), cc.fadeIn(0.1)))
     },
     blockChoosed: function() {
-        var e = cc.sequence(cc.rotateBy(.05, 10), cc.rotateBy(.05, -10)).repeatForever();
-        e.tag = 1,
+        var e = cc.sequence(cc.rotateBy(0.05, 10), cc.rotateBy(0.05, -10)).repeatForever();
+        e.tag = 1
         this.node.runAction(e)
     },
     createGameTool: function() {},
     toolCanCombineEffect: function(e) {
-        this.temp.active = !0,
+        this.temp.active = true
         e.parent = this.temp
     },
     discoEffect: function(e, t) {
-        this.node.zIndex = 1,
-        this.temp.active = !0,
-        e.active = !0,
+        //this.node.zIndex = 1
+        this.temp.active = true
+        e.active = true
         e.parent = this.temp;
         var i = cc.rotateBy(1, 720).repeatForever();
-        i.tag = 1,
-        t && (this.view.getComponent(cc.Sprite).spriteFrame = this.combineView[t - 1]),
+        i.tag = 1
+        t && (this.view.getComponent(cc.Sprite).spriteFrame = this.combineView[t - 1])
         this.view.runAction(i)
     },
-    playToolAnima: function(e) {
-        this.toolAnima.active = !0;
-        var t, i = this.toolAnima.getComponent(cc.Animation);
-        1 == e || (2 == e ? t = "tool_bomb" : 3 == e && (t = "tool_disco")),
-        t && i.play(t)
+    playToolAnima: function(type) {
+        this.toolAnima.active = true;
+        var name
+        var anim = this.toolAnima.getComponent(cc.Animation);
+        this.toolAnima.getChildByName("firework").active = false
+        if(type != 1){
+            if(type == 2){
+                name = "tool_bomb"
+                this.toolAnima.getChildByName("firework").active = true
+            }else if(type == 3){
+                name = "tool_disco"
+            }
+        }
+        name && anim.play(name)
     },
     test: function() {
         
