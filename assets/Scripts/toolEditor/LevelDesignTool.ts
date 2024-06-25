@@ -1,4 +1,5 @@
 import blockDesign from "./blockDesign";
+import colorLimitControl from "./colorLimitControl";
 import customBlockDesign from "./customBlockDesign";
 import levelNode from "./levelNode";
 import squirrelDesign from "./squirrelDesign";
@@ -49,6 +50,11 @@ export default class levelDesignTool extends cc.Component {
   @property(cc.Prefab)
   targetControlPre: cc.Prefab = null;
 
+  @property(cc.Node)
+  colorLimitPos:cc.Node=null;
+  @property(cc.Prefab)
+  colorLimitPre:cc.Prefab=null;
+
   matrix: number[][] = [];
   grassMatrix: number[][] = [];
   bubbleMatrix: number[][] = [];
@@ -59,9 +65,13 @@ export default class levelDesignTool extends cc.Component {
   squirrelList: cc.Node[] = [];
   customBlockList: customBlockModified[] = [];
   customBlockNodeList: cc.Node[] = [];
+ 
 
   private targetList: number[][] = [];
   private targetNode: cc.Node[] = [];
+
+  private colorLimitList:number[]=[];
+  private colorNode:cc.Node[]=[];
 
   private frame: cc.SpriteFrame;
   private id: number;
@@ -74,6 +84,7 @@ export default class levelDesignTool extends cc.Component {
     cc.systemEvent.on('STARTDRAGGING', this.startDragging, this)
     cc.systemEvent.on('ENDDRAGGING', this.endDragging, this)
     cc.systemEvent.on('SAVE', this.addTarget, this)
+    cc.systemEvent.on('COLORLIMIT',this.addColorLimit,this)
     this.phase = PHASE.ADD;
   }
 
@@ -373,6 +384,7 @@ export default class levelDesignTool extends cc.Component {
       step: this.step.string,
       targetList: this.targetList,
       scoreStandard: score,
+      colorLimit:this.colorLimitList,
       customBLocks: this.customBlockList,
       grassList: this.grassSquare,
       stoneList: this.squirrelSquare,
@@ -459,6 +471,25 @@ export default class levelDesignTool extends cc.Component {
   removeLastTarget() {
     if (this.targetNode.length > 0) {
       let tar = this.targetNode.pop();
+      tar.destroy();
+    }
+  }
+  addColorLimit(eventData){
+    this.colorLimitList[eventData.targetId]=eventData.id;
+  }
+
+  addemptyColor(){
+    let tar = cc.instantiate(this.colorLimitPre);
+    console.log(this.colorNode)
+    tar.parent = this.colorLimitPos
+    tar.getComponent(colorLimitControl).setView(this.colorNode.length)
+    tar.setPosition(0, -this.colorNode.length * 80);
+    this.colorNode.push(tar);
+  }
+  removeLastColor(){
+    if (this.colorNode.length > 0) {
+      this.colorLimitList.pop();
+      let tar= this.colorNode.pop();
       tar.destroy();
     }
   }
