@@ -92,6 +92,7 @@ cc.Class({
         this.force = 0
         this.shouldVibrate = false
         this.customNodeList = []
+        this.colorLimit=[]
     },
     
     startNewGame: function() {
@@ -116,6 +117,7 @@ cc.Class({
             gameData.starMatrix = mapList
             this.list = levelResource.targetList
             step = levelResource.step;
+            this.colorLimit=levelResource.colorLimit?levelResource.colorLimit:[0,1,2,3,4,5,6,7]
         }else {
             var hinderList
             targetList = this.createRandomTargetList();
@@ -1766,8 +1768,8 @@ cc.Class({
         var pos = utils.grid2Pos(10, y);
         this.node.addChild(stone);
         var comp = stone.getComponent("block")
-        var randomColor = utils.randomColorByArray([1, 2, 3, 4, 5]);
-        comp.initStoneView(e.x, e.y, randomColor - 1)
+        var randomColor = utils.randomColorByArray(this.colorLimit);
+        comp.initStoneView(e.x, e.y, randomColor)
         gameData.updateSingleData(e, randomColor)
         stone.position = pos;
         var r = utils.grid2Pos(e.x, e.y)
