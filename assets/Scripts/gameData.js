@@ -267,8 +267,12 @@ module.exports = {
             }))
     },
     updateSingleData: function (e, t) {
-        // this.starMatrix[e.x][e.y] = this.starMatrix[e.x][e.y] + t >= psconfig.dType ? psconfig.dType : this.starMatrix[e.x][e.y] + t
-        this.starMatrix[e.x][e.y] = t;
+
+        if (t == 21 || t == 22 || t == 38 || t == 40) {
+            this.starMatrix[e.x][e.y] = t-1;
+        }
+        else { this.starMatrix[e.x][e.y] = this.starMatrix[e.x][e.y] + t >= psconfig.dType ? psconfig.dType : this.starMatrix[e.x][e.y] + t }
+
     },
     getDataBygrid: function (e) {
         return !!e && this.starMatrix[e.x][e.y]

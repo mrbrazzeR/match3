@@ -80,6 +80,7 @@ cc.Class({
         var i = this.node.getChildByName(e + "")
         var s = i.getChildByName("num")
         var n = s.getComponent(cc.Label);
+        cc.systemEvent.emit("UPDATETARGET",{});  
         if (t > 0) {
             n.string = t + "",
             s.active = true;
@@ -96,6 +97,7 @@ cc.Class({
         } else
             s.active = false,
             i.getChildByName("finishIcon").active = true
+              
     },
     updateGameStep: function(e) {
         this.step.string = e + ""
@@ -225,5 +227,8 @@ cc.Class({
             }
         return e
     },
+    getCurrentTarget:function(){
+        return this.targetList
+    }
     
 });

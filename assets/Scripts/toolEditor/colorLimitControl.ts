@@ -22,18 +22,18 @@ export default class colorLimitControl extends cc.Component {
 
     idTarget: number;
     id: number;
-    idAvaiable = [0, 1, 2, 3, 4, 20, 21,37,39]
+    idAvaiable = [0, 1, 2, 3, 4, 20, 21, 37, 39]
 
     protected onLoad(): void {
         cc.systemEvent.on('COLORLIMIT', this.chooseTarget, this)
     }
 
-    setView(id:number){
-        this.idTarget=id;
+    setView(id: number) {
+        this.idTarget = id;
         for (let i = 0; i < this.idAvaiable.length; i++) {
             let tileSet = cc.instantiate(this.tile);
             tileSet.getComponent(cc.Sprite).spriteFrame = this.frames[i];
-            tileSet.getComponent(colorLimitBlock).set(this.idAvaiable[i],id);
+            tileSet.getComponent(colorLimitBlock).set(this.idAvaiable[i], id);
             tileSet.parent = this.scrollRect;
             let row = i % 10;
             let col = Math.floor(i / 10);

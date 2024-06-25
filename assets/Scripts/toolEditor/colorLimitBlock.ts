@@ -12,6 +12,6 @@ export default class colorLimitBlock extends cc.Component {
 
     choose(){
        let fr= this.getComponent(cc.Sprite).spriteFrame;
-        cc.systemEvent.emit('COLORLIMIT',{id:this.id,frame:fr,targetId:this.targetId})
+        cc.systemEvent.emit('COLORLIMIT',{id:this.id+1,frame:fr,targetId:this.targetId})
     }
 }
