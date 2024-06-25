@@ -22,7 +22,7 @@ export default class colorLimitControl extends cc.Component {
 
     idTarget: number;
     id: number;
-    idAvaiable = [0, 1, 2, 3, 4, 5, 6, 7, 20, 21,37,39]
+    idAvaiable = [0, 1, 2, 3, 4, 20, 21,37,39]
 
     protected onLoad(): void {
         cc.systemEvent.on('COLORLIMIT', this.chooseTarget, this)
