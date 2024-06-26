@@ -1558,8 +1558,6 @@ cc.Class({
         let targetSpecial = [20, 21, 37, 39];
         let entri = Object.entries(l).map(([key, value]) => [parseInt(key), value]);
         for (let i = 0; i < entri.length; i++) {
-            // console.log(entri[i][0],entri[i][1])
-            // console.log(this.colorLimit)
             if (targetSpecial.includes(entri[i][0]) && entri[i][1] <= 0 && this.colorLimit.includes(entri[i][0] + 1)) {
                 for (let j = 0; j < this.colorLimit.length; j++) {
                     if (this.colorLimit[j] == entri[i][0] + 1) {
@@ -1568,7 +1566,6 @@ cc.Class({
                 }
             }
         }
-        console.log(this.colorLimit)
     },
     queryCanFall: function (e) {
         var t;
