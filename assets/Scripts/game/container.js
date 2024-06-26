@@ -118,7 +118,7 @@ cc.Class({
             gameData.starMatrix = mapList
             this.list = levelResource.targetList
             step = levelResource.step;
-            this.colorLimit = levelResource.colorLimit && levelResource.colorLimit.length > 0 ? levelResource.colorLimit : [0, 1, 2, 3, 4]
+            this.colorLimit = levelResource.colorLimit && levelResource.colorLimit.length > 0 ? levelResource.colorLimit : [1, 2, 3, 4, 5]
         } else {
             var hinderList
             targetList = this.createRandomTargetList();
