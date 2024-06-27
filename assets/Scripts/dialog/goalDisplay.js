@@ -23,21 +23,35 @@ cc.Class({
     fadeInAndOut: function() {
         cc.director.SoundManager.playSound("mission_show")
         this.node.parent.active = true, this.node.active = true;
-        var e = this;
-        this.initGoalPosition(), this.squirrelAnimation();
-        var t = cc.sequence(cc.spawn(cc.fadeIn(.79), cc.moveTo(1.58 * this.scaleRate, cc.v2(0, 0))), cc.callFunc(function() {
-            for (var t = e.goal.getTargetItemWorldPosition(), i = 0; i < t.length; i++) cc.systemEvent.emit("NOTICE_TARGET", t[i]);
-            e.goal.node.active = false
-        }), cc.fadeOut(.79), cc.callFunc(function() {
-  
-            cc.director.container.addGameToolToContainer(gameData.choosedList), e.toolList.judgeLevel(), e.bg.runAction(cc.fadeOut(.5)), setTimeout(function() {
-                cc.systemEvent.emit("EXCUTE_GUIDE_STEP")
-            }, 500)
-        }));
+        var _this = this;
+        this.initGoalPosition()
+        this.squirrelAnimation()
+        var t = cc.sequence(
+            cc.spawn(cc.fadeIn(.79), 
+                cc.moveTo(1.58 * this.scaleRate, cc.v2(0, 0))), 
+                cc.callFunc(function() {
+                    var getTarget = _this.goal.getTargetItemWorldPosition()
+                    for (var i = 0; i < t.length; i++){ 
+                        cc.systemEvent.emit("NOTICE_TARGET", getTarget[i]);
+                    }
+                _this.goal.node.active = false
+            }), cc.fadeOut(.79), 
+                cc.callFunc(function() {
+                    cc.director.container.addGameToolToContainer(gameData.choosedList),
+                    _this.toolList.judgeLevel()
+                    _this.bg.runAction(cc.fadeOut(.5)), setTimeout(function() {
+                        cc.systemEvent.emit("EXCUTE_GUIDE_STEP")
+                    }, 500)
+            })
+        );
         this.node.runAction(t)
     },
     initGoalNumber: function(e) {
-        this.bg.active = true, this.bg.opacity = 120, this.goal.node.active = true, this.goal.updateNodeTag(e), this.fadeInAndOut()
+        this.bg.active = true
+        this.bg.opacity = 120 
+        this.goal.node.active = true
+        this.goal.updateNodeTag(e)
+        this.fadeInAndOut()
     },
     
 });

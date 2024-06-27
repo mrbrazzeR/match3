@@ -26,11 +26,16 @@ cc.Class({
         coinsNumber: cc.Node,
         flower_example: cc.Node,
         grassBreak: cc.Prefab,
-        bubbleBreak: cc.Prefab
+        bubbleBreak: cc.Prefab,
+        paddyEffect: cc.Prefab,
     },
 
     onLoad: function() {
-        
+        this.paddyPool = new cc.NodePool;
+        for (var e = 0; e < 5; e++) {
+            var t = cc.instantiate(this.paddyEffect);
+            this.paddyPool.put(t)
+        }
         this.pinePool = new cc.NodePool;
         for (var e = 0; e < 5; e++) {
             var t = cc.instantiate(this.pinePrefab);
@@ -47,21 +52,22 @@ cc.Class({
             this.grassPool.put(a)
         }
         this.bubblePool = new cc.NodePool,
-        cc.systemEvent.on("PINECONE", this.PineConeCollectEffect, this),
-        cc.systemEvent.on("TOOL_TRANS_EFFECT", this.toolTransiteAnimation, this),
-        cc.systemEvent.on("FIVE_STEP_TIPS", this.fiveStepTips, this),
-        cc.systemEvent.on("PLAYER_TOOL_ANIMATION", this.playerToolUnlockAnima, this),
-        cc.systemEvent.on("MOVE_ADD", this.movesAdd, this),
-        cc.systemEvent.on("NOTICE_TARGET", this.noticeGameTarget, this),
-        cc.systemEvent.on("AFTER_BUY_PLAYERTOOL", this.animationAfterPlayerBuyPlayerTool, this),
-        cc.systemEvent.on("OPERATION_EVALUATE", this.EvaluatePlayerOperation, this),
-        cc.systemEvent.on("SHUFFLE_TIPS", this.shuffleEffectTips, this),
-        cc.systemEvent.on("GAMEVIEW_COINS_OBTAIN", this.addCoins, this),
-        cc.systemEvent.on("HINDER_SQUIRREL_ANIMATION", this.hinderSquirrelAnimation, this),
-        cc.systemEvent.on("HINDER_FLOWER_ANIMATION", this.hinderFlowerAnimaiton, this),
-        cc.systemEvent.on("HIT_GRASS_ANIMATION", this.hitGroundGrassAnimation, this),
-        cc.systemEvent.on("HIT_BUBBLE_ANIMATION", this.hitCubesBubbleAnimation, this),
+        cc.systemEvent.on("PINECONE", this.PineConeCollectEffect, this)
+        cc.systemEvent.on("TOOL_TRANS_EFFECT", this.toolTransiteAnimation, this)
+        cc.systemEvent.on("FIVE_STEP_TIPS", this.fiveStepTips, this)
+        cc.systemEvent.on("PLAYER_TOOL_ANIMATION", this.playerToolUnlockAnima, this)
+        cc.systemEvent.on("MOVE_ADD", this.movesAdd, this)
+        cc.systemEvent.on("NOTICE_TARGET", this.noticeGameTarget, this)
+        cc.systemEvent.on("AFTER_BUY_PLAYERTOOL", this.animationAfterPlayerBuyPlayerTool, this)
+        cc.systemEvent.on("OPERATION_EVALUATE", this.EvaluatePlayerOperation, this)
+        cc.systemEvent.on("SHUFFLE_TIPS", this.shuffleEffectTips, this)
+        cc.systemEvent.on("GAMEVIEW_COINS_OBTAIN", this.addCoins, this)
+        cc.systemEvent.on("HINDER_SQUIRREL_ANIMATION", this.hinderSquirrelAnimation, this)
+        cc.systemEvent.on("HINDER_FLOWER_ANIMATION", this.hinderFlowerAnimaiton, this)
+        cc.systemEvent.on("HIT_GRASS_ANIMATION", this.hitGroundGrassAnimation, this)
+        cc.systemEvent.on("HIT_BUBBLE_ANIMATION", this.hitCubesBubbleAnimation, this)
         cc.systemEvent.on("REDUCE_COINS_ANIMATION", this.coinsReduceAnimation, this)
+        cc.systemEvent.on("PADDY_ANIMATION", this.paddyAnimation, this)
     },
     start: function() {
         this.stepTips.opacity = 0
@@ -140,7 +146,7 @@ cc.Class({
         cc.systemEvent.emit("FUNCTION_EXPLAIN_OFF"))
     },
     fiveStepTips: function() {
-        this.stepTips.active = !0
+        this.stepTips.active = true
         this.stepTips.scale = .01
         cc.director.SoundManager.playSound("plateIn");
         var e = cc.sequence(cc.spawn(cc.fadeIn(.5), cc.scaleTo(.5, 1)), cc.sequence(cc.rotateBy(.05, 15), cc.rotateBy(.05, -15), cc.rotateTo(.05, 0)).repeat(3), cc.delayTime(1), cc.spawn(cc.fadeOut(.5), cc.scaleTo(.5, .01)), cc.callFunc(function() {
@@ -152,7 +158,7 @@ cc.Class({
         var t = this
           , i = e.pos
           , s = this.node.convertToNodeSpaceAR(i);
-        this.tool.active = !0,
+        this.tool.active = true,
         this.tool.position = cc.v2(0, 0);
         var n = this.tool.getChildByName("light")
           , a = this.tool.getChildByName("toolView");
@@ -161,7 +167,7 @@ cc.Class({
         cc.director.SoundManager.playSound("unlock"),
         n.runAction(cc.spawn(cc.rotateBy(2, 180), cc.sequence(cc.scaleTo(.5, 1), cc.delayTime(1), cc.fadeOut(.5)))),
         a.runAction(cc.sequence(cc.scaleTo(.5, 1), cc.delayTime(1), cc.scaleTo(.5, .4), cc.moveTo(.5, s), cc.callFunc(function() {
-            t.tool.active = !1,
+            t.tool.active = false,
             t.listTool.changeBtnStatus(e.num),
             cc.systemEvent.emit("PLAYER_TOOL_GUIDE", {
                 num: e.num
@@ -173,10 +179,10 @@ cc.Class({
           , i = t.parent.convertToWorldSpaceAR(t.position)
           , s = this.node.convertToNodeSpaceAR(i)
           , n = cc.instantiate(this.tool);
-        n.active = !0,
+        n.active = true,
         n.parent = this.node,
         n.position = cc.v2(0, 0),
-        n.getChildByName("light").active = !1;
+        n.getChildByName("light").active = false;
         var a = n.getChildByName("toolView");
         a.scale = .1,
         a.position = cc.v2(0, 0),
@@ -223,6 +229,8 @@ cc.Class({
             a.getComponent(cc.Sprite).spriteFrame = this.targetList[19]
         }else if(37 == e.type){
             a.getComponent(cc.Sprite).spriteFrame = this.targetList[20]
+        }else if(40 == e.type){
+            a.getComponent(cc.Sprite).spriteFrame = this.targetList[20]
         }else{
             a.getComponent(cc.Sprite).spriteFrame = this.targetList[s]
             if(e.type < 6){
@@ -238,7 +246,7 @@ cc.Class({
           , d = cc.callFunc(function() {
             a.removeFromParent(),
             cc.director.SoundManager.playSound("mission"),
-            cc.director.isMoving = !1,
+            cc.director.isMoving = false,
             cc.director.needWait = 0,
             cc.director.isrunning = 0,
             o.runAction(cc.sequence(cc.scaleTo(.2, .9), cc.scaleTo(.2, 1.1), cc.scaleTo(.2, 1)))
@@ -268,7 +276,7 @@ cc.Class({
     },
     shuffleEffectTips: function() {
         cc.director.SoundManager.playSound("shuffle"),
-        this.shuffleTips.active = !0,
+        this.shuffleTips.active = true,
         this.shuffleTips.scale = .01;
         var e = cc.sequence(cc.spawn(cc.fadeIn(.1), cc.scaleTo(.2, 1).easing(cc.easeBackOut(3))), cc.sequence(cc.rotateBy(.05, 15), cc.rotateBy(.05, -15), cc.rotateTo(.05, 0)).repeat(3), cc.fadeOut(.5));
         this.shuffleTips.runAction(e)
@@ -276,7 +284,7 @@ cc.Class({
     addCoins: function(e) {
         for (var t = this, i = e % 10, s = (e - i) / 10, n = function(e) {
             setTimeout(function() {
-                9 == e ? t.obtainCoinsEffect(s + i, !0) : t.obtainCoinsEffect(s)
+                9 == e ? t.obtainCoinsEffect(s + i, true) : t.obtainCoinsEffect(s)
             }, 100 * e)
         }, a = 0; a < 10; a++)
             n(a)
@@ -286,7 +294,7 @@ cc.Class({
           , n = cc.instantiate(this.toolItem)
           , a = this.coinsNumber.position;
         if (!this.coinsNumber.active) {
-            this.coinsNumber.active = !0,
+            this.coinsNumber.active = true,
             this.coinsNumber.scale = .1;
             var o = gameData.starCount;
             this.updateCoinsPrompt(this.coinsNumber, o),
@@ -307,7 +315,7 @@ cc.Class({
             gameData.storeGameData(),
             cc.log("=====storeGameData=====")
             t && s.coinsNumber.runAction(cc.sequence(cc.delayTime(.5), cc.fadeOut(.5), cc.callFunc(function() {
-                s.coinsNumber.active = !1
+                s.coinsNumber.active = false
             })))
         }));
         n.runAction(l)
@@ -315,14 +323,14 @@ cc.Class({
     coinsReduceAnimation: function(e) {
         var t = this;
         if (!this.coinsNumber.active) {
-            this.coinsNumber.active = !0,
+            this.coinsNumber.active = true,
             this.coinsNumber.scale = .1;
             var s = gameData.starCount;
             this.updateCoinsPrompt(this.coinsNumber, s);
             var n = cc.sequence(cc.spawn(cc.scaleTo(.5, .9), cc.fadeIn(.5)), cc.spawn(cc.scaleTo(.5, 1.1), cc.callFunc(function() {
                 t.updateCoinsPrompt(t.coinsNumber, gameData.starCount)
             })), cc.spawn(cc.scaleTo(.5, 1), cc.fadeOut(.5)), cc.callFunc(function() {
-                t.coinsNumber.active = !1
+                t.coinsNumber.active = false
             }));
             this.coinsNumber.runAction(cc.sequence(cc.spawn(cc.fadeIn(.5), cc.scaleTo(.5, 1).easing(cc.easeBackOut(3))), cc.callFunc(function() {
                 gameData.starCount -= e.cost,
@@ -335,32 +343,65 @@ cc.Class({
     updateCoinsPrompt: function(e, t) {
         e && (e.getChildByName("coins_number").getComponent(cc.Label).string = t + "")
     },
-    hinderSquirrelAnimation: function(e) {
+    hinderSquirrelAnimation: function(obj) {
         var t = this.target.getTargetIconWolrdPosition(28);
         if (t) {
-            var s = e.statue
-              , n = e.worldPos
-              , a = this.node.convertToNodeSpaceAR(n);
-            s.parent = this.node,
-            cc.director.SoundManager.playSound("statueShow"),
-            s.position = a;
-            var o = this.node.convertToNodeSpaceAR(t)
-              , c = cc.sequence(cc.spawn(cc.sequence(cc.scaleTo(.5, .8), cc.scaleTo(.5, 1)), cc.sequence(cc.rotateBy(.5, -10), cc.rotateBy(.5, 10))), cc.spawn(cc.rotateTo(1, 0), cc.moveTo(1, o).easing(cc.easeIn(3)), cc.scaleTo(1, .2), cc.callFunc(function() {
-                cc.director.SoundManager.playSound("statueMove")
-            })), cc.callFunc(function() {
-                s.removeFromParent(!0),
-                cc.systemEvent.emit("NUMBER_COUNT", {
-                    type: 28
-                }),
-                39 == gameData.bestLevel && (gameData.guide_step.thirteen_step || cc.systemEvent.emit("STATUE_SECOND_GUIDE"))
-               cc.director.SoundManager.playSound("statueCollect")
+            cc.director.SoundManager.playSound("statueShow")
+            var statue = obj.statue
+            var worldPos = obj.worldPos
+            var pos = this.node.convertToNodeSpaceAR(worldPos);
+            statue.parent = this.node     
+            statue.position = pos;
+            var posMove = this.node.convertToNodeSpaceAR(t)
+            var action = cc.sequence(
+                cc.spawn(cc.sequence(cc.scaleTo(.5, .8), cc.scaleTo(.5, 1)), cc.sequence(cc.rotateBy(.5, -10), cc.rotateBy(.5, 10))),
+                cc.spawn(cc.rotateTo(1, 0), cc.moveTo(1, posMove).easing(cc.easeIn(3)), cc.scaleTo(1, .2),
+                cc.callFunc(function() {
+                    cc.director.SoundManager.playSound("statueMove")
+                })), 
+                cc.callFunc(function() {
+                    statue.removeFromParent(true)
+                    cc.systemEvent.emit("NUMBER_COUNT", {
+                        type: 28
+                    })
+                    if(39 == gameData.bestLevel){
+                        gameData.guide_step.thirteen_step || cc.systemEvent.emit("STATUE_SECOND_GUIDE")
+                    }
+                    cc.director.SoundManager.playSound("statueCollect")
+                })
+            );
+            statue.runAction(action)
+        }
+    },
+    paddyAnimation(obj){
+        var _this = this
+        var worldPosition = obj.worldPosition;
+        var paddy = this.paddyPool.size() > 0 ? this.paddyPool.get() : cc.instantiate(this.paddyEffect);
+        var pos = this.node.convertToNodeSpaceAR(worldPosition);
+        paddy.parent = this.node
+        paddy.position = pos;
+        var getTargetIconWolrdPosition = this.target.getTargetIconWolrdPosition(42);
+        if (getTargetIconWolrdPosition) {
+            var posMove = this.node.convertToNodeSpaceAR(getTargetIconWolrdPosition)
+            var action = cc.sequence(
+                cc.spawn(
+                    cc.moveBy(0.5, cc.v2(0, -50)), 
+                    cc.scaleTo(0.5, 1.1)), 
+                    cc.spawn(cc.moveTo(0.5, posMove), cc.scaleTo(0.5, 0.8))
+                , cc.callFunc(function() {
+                    _this.paddyPool.put(paddy),
+                    cc.systemEvent.emit("NUMBER_COUNT", {
+                        type: 42
+                    })
+                    //cc.director.SoundManager.playSound("mission")
             }));
-            s.runAction(c)
+            //cc.director.SoundManager.playSound("fruitDrop"),
+            paddy.runAction(action)
         }
     },
     hinderFlowerAnimaiton: function(e) {
         var t = cc.instantiate(this.flower_example);
-        t.active = !0;
+        t.active = true;
         var i = e.worldPos
           , s = this.node.convertToNodeSpaceAR(i);
         t.parent = this.node,
@@ -369,7 +410,7 @@ cc.Class({
         if (n) {
             var a = this.node.convertToNodeSpaceAR(n)
               , o = cc.sequence(cc.spawn(cc.sequence(cc.scaleTo(.5, 2), cc.scaleTo(.5, 1.9)), cc.sequence(cc.rotateBy(.5, -20), cc.rotateBy(.5, 20))), cc.spawn(cc.moveTo(1, a).easing(cc.easeIn(3)), cc.scaleTo(1, .2)), cc.callFunc(function() {
-                t.removeFromParent(!0),
+                t.removeFromParent(true),
                 cc.director.SoundManager.playSound("mission"),
                 cc.systemEvent.emit("NUMBER_COUNT", {
                     type: 26

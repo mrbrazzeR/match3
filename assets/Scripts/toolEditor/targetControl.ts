@@ -24,7 +24,7 @@ export default class targetControl extends cc.Component {
 
     idTarget: number;
     id: number;
-    idAvaiable = [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 25, 26, 27, 28, 29, 37, 38, 39,40,41]
+    idAvaiable = [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 25, 26, 27, 28, 29, 37, 38, 39,40,41,42]
 
     protected onLoad(): void {
         cc.systemEvent.on('TARGETCHOOSE', this.chooseTarget, this)
@@ -39,7 +39,7 @@ export default class targetControl extends cc.Component {
             tileSet.parent = this.scrollRect;
             let row = i % 10;
             let col = Math.floor(i / 10);
-            tileSet.setPosition(row * 50, -col * 50 - 35)
+            tileSet.setPosition(row * 41, -col * 41 - 35)
             tileSet.setContentSize(40, 40)
         }
         this.scrollRect.active = !this.scrollRect.active;

@@ -278,23 +278,28 @@ module.exports = {
         t
     },
     randomColorByArray: s,
-    gameOver: function(e) {
-        for (var t = 0; t < psconfig.matrixRow; t++)
-            for (var s = 0; s < psconfig.matrixCol; s++) {
-                var n = e[t][s];
+    gameOver: function(arr) {//[1, 2, 3, 4, 5]
+        for (var i = 0; i < psconfig.matrixRow; i++){
+            for (var j = 0; j < psconfig.matrixCol; j++) {
+                var n = arr[i][j];
                 if (n >= 0 && n < 20) {
-                    var a = cc.v2(t, s);
-                    if (a.y - 1 >= 0 && n == e[a.x][a.y - 1])
-                        return !1;
-                    if (a.y + 1 < psconfig.matrixCol && n == e[a.x][a.y + 1])
-                        return !1;
-                    if (a.x - 1 >= 0 && n == e[a.x - 1][a.y])
-                        return !1;
-                    if (a.x + 1 < psconfig.matrixRow && n == e[a.x + 1][a.y])
-                        return !1
+                    var pos = cc.v2(i, j);
+                    if (pos.y - 1 >= 0 && n == arr[pos.x][pos.y - 1]){
+                        return false;
+                    }
+                    if (pos.y + 1 < psconfig.matrixCol && n == arr[pos.x][pos.y + 1]){
+                        return false;
+                    }
+                    if (pos.x - 1 >= 0 && n == arr[pos.x - 1][pos.y]){
+                        return false;
+                    }
+                    if (pos.x + 1 < psconfig.matrixRow && n == arr[pos.x + 1][pos.y]){
+                        return false
+                    }
                 }
             }
-        return !0
+        }
+        return true
     },
     getExtraScore: function(e) {
         return 2e3 - 200 * (e - 1)
@@ -487,25 +492,25 @@ module.exports = {
         }
         return t
     },
-    getBalloonClearList: function(e, t, i) {
-        var s = []
-        for (var n = 0; n < t.length; n++){
-            var a = this.getItemAdjacentPos(t[n])
-            for (var o = 0; o < a.length; o++) {
-                var c = a[o]
-                var r = e[c.x][c.y];
-                if(!this.indexOfV2(t, c) && !this.indexOfV2(s, c)){  
-                    if(23 == i && r >= i && r <= i + 2){
-                        s.push(c)
-                    }else if(29 == i && r >= i && r <= i + 7){
-                        s.push(c)
-                    }else if( r == i){
-                        s.push(c)
+    getBalloonClearList: function(starMatrix, detail, type) {
+        var result = []
+        for (var i = 0; i < detail.length; i++){
+            var itemAdjacentPos = this.getItemAdjacentPos(detail[i])
+            for (var j = 0; j < itemAdjacentPos.length; j++) {
+                var c = itemAdjacentPos[j]
+                var r = starMatrix[c.x][c.y];
+                if(!this.indexOfV2(detail, c) && !this.indexOfV2(result, c)){  
+                    if(23 == type && r >= type && r <= type + 2){
+                        result.push(c)
+                    }else if(29 == type && r >= type && r <= type + 7){
+                        result.push(c)
+                    }else if( r == type){
+                        result.push(c)
                     }
                 }
             }
         }
-        return s
+        return result
     },
     randomGetGrid: function(e, t) {
         for (var s = [], n = 0, a = 0; a < t.length; a++)

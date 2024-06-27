@@ -80,12 +80,13 @@ cc.Class({
         }
     },
     customHit(hit) {
-        cc.log(this.typeCustom)
+        cc.log("hihihihihihi", hit)
         this.lbBombRatio.string = this.bombRatio
         if(this.bombRatio > 0){      
             this.actionRotation(this.node)
             if(this.typeCustom == "custom_can"){
                 this.effectCan(hit)
+                
             } 
         }
     },

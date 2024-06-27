@@ -150,7 +150,8 @@ cc.Class({
         gameData.starCount >= e ? (
                 this.unschedule(this.downTimeCount), 
                 cc.director.dialogScript.hideAllChildrenNode(), 
-                this.hideView(1), this.addMovesEffect(), cc.director.container.addGameToolToContainer(t, true), 
+                this.hideView(1), this.addMovesEffect(), 
+                cc.director.container.addGameToolToContainer(t, true), 
                 cc.director.container.target.isGameEnd && (cc.director.container.target.isGameEnd = false), 
                 cc.systemEvent.emit("REDUCE_COINS_ANIMATION", {
                 cost: e

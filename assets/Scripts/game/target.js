@@ -18,7 +18,6 @@ cc.Class({
     },
 
     onLoad: function() {
-
         cc.systemEvent.on("NUMBER_COUNT", this.countBlockNumber, this),
         cc.systemEvent.on("STEP_COUNT", this.countGameStep, this),
         cc.systemEvent.on("GAMEMASK_CONTROL", this.controlGameMask, this)
@@ -40,64 +39,73 @@ cc.Class({
     initTargetNumber: function() {
         this.targetList = {}
     },
-    updateNodeTag: function(e, t) {
-        this.originStep = t
-        this.stepCount = t
-        this.tContent = e
+    updateNodeTag: function(list, step) {
+        this.originStep = step
+        this.stepCount = step
+        this.tContent = list
         this.updateGameStep(this.stepCount),
         this.hideTargetNode();
-        var s = this.computedNodeGap(e.length, this.node, this.nodeList[0])
-        for (var n = 0; n < e.length; n++) {
-            var a = this.nodeList[n];
-            a.position = cc.v2(s * (n + 1) + a.width * n + a.width / 2, 0)
+        var s = this.computedNodeGap(list.length, this.node, this.nodeList[0])
+        for (var i = 0; i < list.length; i++) {
+            var a = this.nodeList[i];
+            a.position = cc.v2(s * (i + 1) + a.width * i + a.width / 2, 0)
             a.active = true
-            a.name = e[n][0] + "";
+            a.name = list[i][0] + "";
             var icon = a.getChildByName("icon")
             var sub = a.getChildByName("sub")
-            var c = e[n][0] < 20 ? e[n][0] : e[n][0] - 20;
+            var c = list[i][0] < 20 ? list[i][0] : list[i][0] - 20;
             //e.getComponent(cc.Sprite).spriteFrame
             sub.active = false  
-            if(e[n][0] < 20){
+            if(list[i][0] < 20){
                 utils.changeLocalNodeTexture(icon, this.viewList, c)
-                if(e[n][0] < 6){
+                if(list[i][0] < 6){
                     sub.active = true
                     utils.changeLocalNodeTexture(sub, this.subView, c)
                 }
-            }else if(e[n][0] == 38){
+            }else if(list[i][0] == 38){
                 utils.changeLocalNodeTexture(icon, this.hinderListView, 10)
-            }else if(e[n][0] == 39){
+            }else if(list[i][0] == 39){
                 utils.changeLocalNodeTexture(icon, this.hinderListView, 11)
-            }else if(e[n][0] == 37){
+            }else if(list[i][0] == 37){
                 utils.changeLocalNodeTexture(icon, this.hinderListView, 12)
+            }else if(list[i][0] == 40){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 13)                            
+            }else if(list[i][0] == 41){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 14)                            
+            }else if(list[i][0] == 42){
+                utils.changeLocalNodeTexture(icon, this.hinderListView, 16)                            
             }else{
                 utils.changeLocalNodeTexture(icon, this.hinderListView, c)
             }
-            this.updateTargetNumber(e[n][0], e[n][1])
-            this.targetList[e[n][0] + ""] = e[n][1]
+            this.updateTargetNumber(list[i][0], list[i][1])
+            this.targetList[list[i][0] + ""] = list[i][1]
         }
     },
-    updateTargetNumber: function(e, t) {
-        var i = this.node.getChildByName(e + "")
-        var s = i.getChildByName("num")
-        var n = s.getComponent(cc.Label);
-        cc.systemEvent.emit("UPDATETARGET",{});  
-        if (t > 0) {
-            n.string = t + "",
-            s.active = true;
-            var a = i.getActionByTag(2);
-            if (a && !a.isDone()){
+
+    updateTargetNumber: function(type, target) {
+        var nodeTarget = this.node.getChildByName(type + "")
+        var numLabel = nodeTarget.getChildByName("num")
+        if (target > 0) {
+            if(cc.director.colorLimit){
+                cc.systemEvent.emit("UPDATETARGET");
+            }
+            
+            numLabel.getComponent(cc.Label).string = target + ""
+            numLabel.active = true;
+            var getAction = nodeTarget.getActionByTag(2);
+            if (getAction && !getAction.isDone()){
                 return;
             }
-            var o = cc.sequence(cc.scaleTo(.2, .9), cc.scaleTo(.2, 1.1), cc.scaleTo(.2, 1));
-            o.tag = 2,
-            i.runAction(o);
-            var c = cc.instantiate(this.boom_star);
-            c.parent = i,
-            c.getComponent(cc.ParticleSystem).resetSystem()
-        } else
-            s.active = false,
-            i.getChildByName("finishIcon").active = true
-              
+            var action = cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.2, 1.1), cc.scaleTo(0.2, 1));
+            action.tag = 2
+            nodeTarget.runAction(action);
+            var boom_star = cc.instantiate(this.boom_star);
+            boom_star.parent = nodeTarget
+            boom_star.getComponent(cc.ParticleSystem).resetSystem()
+        } else{
+            numLabel.active = false
+            nodeTarget.getChildByName("finishIcon").active = true
+        }
     },
     updateGameStep: function(e) {
         this.step.string = e + ""
@@ -134,7 +142,6 @@ cc.Class({
                         }
                         this.scheduleOnce(function() {
                             if (!this.isPass) {
-                                cc.log("sadsad===============")
                                 cc.director.dialogScript.showResultTipsView(2); // Hiển thị kết quả nếu điều kiện không thỏa mãn
                             }
                         }, 0.2); // Đợi 2 giây trước khi kiểm tra điều kiện
@@ -188,31 +195,53 @@ cc.Class({
           , t = cc.director.isPlayerUsedTool ? 1 : 0;
         window.NativeManager.tjReport(gameData.bestLevel + 1, e, t)
     },
-    countBlockNumber: function(e) {
-        var t, i = e;
-        (this.judgeType(i.type) || 100 == i.type) && (100 != i.type && (i.type >= 23 && i.type <= 25 ? i.type = 25 : i.type >= 29 && i.type <= 36 && (i.type = 29),
-        t = i.type + "",
-        this.targetList[t] >= 0 ? (this.targetList[t] > 0 && this.targetList[t]--,
-        this.updateTargetNumber(i.type, this.targetList[t])) : this.targetList[t] = 0),
-        20 != e.type && this.isFinishedTarget())
+    countBlockNumber: function(obj) {        
+        var t, tmp = obj;
+        if(this.judgeType(tmp.type) || 100 == tmp.type){
+            if(100 != tmp.type){
+                if(tmp.type >= 23 && tmp.type <= 25){
+                    tmp.type = 25
+                }else if(tmp.type >= 29 && tmp.type <= 36){
+                    tmp.type = 29
+                }
+                t = tmp.type + ""
+                if(this.targetList[t] >= 0){
+                    if(this.targetList[t] > 0){
+                        if(obj.hit){
+                            this.targetList[t]-= obj.hit
+                        }else{
+                            this.targetList[t]--
+                        }                    
+                    }
+                    this.updateTargetNumber(tmp.type, this.targetList[t])
+                }else{
+                    this.targetList[t] = 0
+                }
+            }
+            if(20 != obj.type){
+                this.isFinishedTarget()
+            }
+        }
     },
     judgeType: function(e) {
-        for (var t = false, i = 0; i < this.tContent.length; i++)
+        var bool = false
+        for (var i = 0; i < this.tContent.length; i++){
             if (25 == this.tContent[i][0]) {
-                if (e >= 23 && e <= 25) {
-                    t = true;
+                if(e >= 23 && e <= 25) {
+                    bool = true;
                     break
                 }
-            } else if (29 == this.tContent[i][0]) {
-                if (e >= 29 && e <= 36) {
-                    t = true;
+            }else if (29 == this.tContent[i][0]) {
+                if(e >= 29 && e <= 36) {
+                    bool = true;
                     break
                 }
-            } else if (this.tContent[i][0] == e) {
-                t = true;
+            }else if (this.tContent[i][0] == e) {
+                bool = true;
                 break
             }
-        return t
+        }
+        return bool
     },
     getTargetIconWolrdPosition: function(e) {
         var t = this.node.getChildByName("" + e);
@@ -227,8 +256,5 @@ cc.Class({
             }
         return e
     },
-    getCurrentTarget:function(){
-        return this.targetList
-    }
     
 });

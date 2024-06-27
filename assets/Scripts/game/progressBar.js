@@ -35,6 +35,13 @@ cc.Class({
 
         this.initStarView()
     },
+    initTestProgressBar:function(data){
+        this.lbScore.string = 0
+        this.progressBar.progress = 0
+        this.scoreValue = 0
+        this.starStandard=data;
+        this.initStarView()
+    },
     initStarView: function() {
         for (var e = 0; e < this.starList.length; e++){
             this.starList[e].getChildByName("inner").active = false

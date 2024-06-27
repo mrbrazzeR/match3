@@ -17,7 +17,9 @@ cc.Enum({
     ladybug: 37, 
     waterBubble: 38,
     rockStone: 39,
-    customBlocks: 40
+    customAvarta:40,
+    customCan: 41,
+    bag:42
 })
 module.exports = {
     cellSize: 75,
@@ -25,7 +27,7 @@ module.exports = {
     matrixCol: 9,
     totalColors: [0, 1, 2, 3, 4],
     extraScore: 2e3,
-    rType: 8,
+    rType: 8, 
     bType: 9,
     dType: 10,
     direction: i,

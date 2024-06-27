@@ -57,7 +57,7 @@ module.exports = {
     currentZeroTime: null, //isNewDay()
     boxGuide: null,
     ///
-
+    levelTest: null,
     ////Bouns   
     bounsList: null,
     bounsSub: {
@@ -267,15 +267,21 @@ module.exports = {
             }))
     },
     updateSingleData: function (e, t) {
-
-        if (t == 21 || t == 22 || t == 38 || t == 40) {
-            this.starMatrix[e.x][e.y] = t-1;
+        if (cc.director.container.colorLimit) {
+            this.starMatrix[e.x][e.y] = t
+        } else {
+            if (this.starMatrix[e.x][e.y] + t >= psconfig.dType) {
+                this.starMatrix[e.x][e.y] = psconfig.dType
+            } else {
+                this.starMatrix[e.x][e.y] = this.starMatrix[e.x][e.y] + t
+            }
         }
-        else { this.starMatrix[e.x][e.y] = this.starMatrix[e.x][e.y] + t >= psconfig.dType ? psconfig.dType : this.starMatrix[e.x][e.y] + t }
-
     },
     getDataBygrid: function (e) {
         return !!e && this.starMatrix[e.x][e.y]
     },
+    setLevelTest: function (e) {
+        this.levelTest = e;
+    }
 
 }

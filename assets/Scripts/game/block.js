@@ -48,8 +48,7 @@ cc.Class({
         this._xPos = x
         this._yPos = y
         if(this._stoneType != 26 && this._stoneType != 27){
-            this.node.zIndex = x   
-            
+            this.node.zIndex = x        
         }
         this.node.getChildByName("lbIndex").getComponent(cc.Label).string = this.node.zIndex
     },
@@ -64,6 +63,8 @@ cc.Class({
             } else if (type == psconfig.dType) {// Disco type             
                 this.discoType = discoType <= 5 ? discoType : this.randomCreateDiscoType();
                 this.view.getComponent(cc.Sprite).spriteFrame = this.discoList[this.discoType];
+                this.view.active = false;
+                this.playToolAnima(3);
             } else if (type == psconfig.bType) {//Boom type
                 this.view.active = false;
                 this.playToolAnima(2);
@@ -96,10 +97,10 @@ cc.Class({
                 } else if (type == 39) {
                     // Rock stone type
                     this.initRockStone(1);
-                }else if (type == 40) {
+                }else if (type == 42) {
                     // Rock stone type
-                    this.initLockAvarta();
-                } else {
+                    this.initBag();
+                }else {
                     // Hinder view for other special types
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[type - 20];
                 }
@@ -180,7 +181,7 @@ cc.Class({
         this.lock_func.active = false
         this.plant.getChildByName("petal").active = false
         this.bombRatio = 4
-        this.node.zIndex = 200;
+        this.node.zIndex = 100;
     },
     flowerHit: function() {
         var _this = this
@@ -189,7 +190,7 @@ cc.Class({
         t.stopActionByTag(1002);
         var i = "item" + (4 - this.bombRatio)
         var s = t.getChildByName(i);
-        this.node.zIndex = 500;
+        this.node.zIndex = 200;
         cc.log("ssssssssssssssssssss")
         var action = cc.sequence(
             cc.sequence(cc.scaleTo(0.2, 0.8), cc.scaleTo(0.2, 1.2)).repeat(2),
@@ -198,7 +199,7 @@ cc.Class({
             cc.spawn(cc.scaleTo(0.25, 1).easing(cc.easeBackOut(3)), 
             cc.callFunc(function() {
                 s.active = true
-                _this.node.zIndex = 200
+                _this.node.zIndex = 100
             })
         ));
         action.tag = 1002
@@ -210,7 +211,7 @@ cc.Class({
         this.node.removeFromParent()
     },
     initWindmill: function(e) {
-        this.node.zIndex = 200
+        this.node.zIndex = 100
         this.bombRatio = e
         this.lock_func.active = true
         if(e - 2 < 0){
@@ -273,6 +274,11 @@ cc.Class({
         this.bombRatio = e
         this.lock_func.active = false
         this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[6]
+    },
+    initBag(){
+        this.bombRatio = 9999999
+        this.lock_func.active = false
+        this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[7]
     },
     hitLadyBugCubes: function() {
         cc.director.SoundManager.playSound("glassBallBreak")
@@ -392,7 +398,11 @@ cc.Class({
         this.outLine.active = false
         this.lock_func.active = false
         this.windmillOutlineLight.active = false
+
         this.toolAnima.active = false
+        this.toolAnima.getChildByName("discoball").active = false
+        this.toolAnima.getChildByName("boom").active = false
+
         this.view.angle = -0
         if (this.flower.active) {
             var e = this.plant.getChildByName("petal").children
@@ -418,42 +428,49 @@ cc.Class({
         //this.node.runAction(cc.spawn(cc.scaleTo(0.3, 1), cc.fadeIn(0.1)))
     },
     blockChoosed: function() {
-        var e = cc.sequence(cc.rotateBy(0.05, 10), cc.rotateBy(0.05, -10)).repeatForever();
-        e.tag = 1
-        this.node.runAction(e)
+        if(this._stoneType != 10){
+            var action = cc.sequence(cc.rotateBy(0.05, 10), cc.rotateBy(0.05, -10)).repeatForever();
+            action.tag = 1
+            this.node.runAction(action)
+        }
+        
     },
     createGameTool: function() {},
     toolCanCombineEffect: function(e) {
         this.temp.active = true
         e.parent = this.temp
     },
-    discoEffect: function(e, t) {
-        //this.node.zIndex = 1
+    discoEffect: function(absorb, t) {
+        this.node.zIndex = 1000
         this.temp.active = true
-        e.active = true
-        e.parent = this.temp;
-        var i = cc.rotateBy(1, 720).repeatForever();
-        i.tag = 1
-        t && (this.view.getComponent(cc.Sprite).spriteFrame = this.combineView[t - 1])
-        this.view.runAction(i)
-    },
-    playToolAnima: function(type) {
-        this.toolAnima.active = true;
-        var name
-        var anim = this.toolAnima.getComponent(cc.Animation);
-        this.toolAnima.getChildByName("firework").active = false
-        if(type != 1){
-            if(type == 2){
-                name = "tool_bomb"
-                this.toolAnima.getChildByName("firework").active = true
-            }else if(type == 3){
-                name = "tool_disco"
-            }
+        absorb.active = true
+        absorb.parent = this.temp
+        /* var action = cc.rotateBy(1, 720).repeatForever();
+        action.tag = 1
+        if(action){
+            this.view.getComponent(cc.Sprite).spriteFrame = this.combineView[t - 1]
         }
-        name && anim.play(name)
-    },
-    test: function() {
-        
-    },
-            
+        this.view.runAction(action) */
+        var discoball = this.toolAnima.getChildByName("discoball")
+        discoball.getComponent("Spine").play('Skill_start', 1 , function() {
+            discoball.getComponent("Spine").play("Skill_main", 0)
+        }); 
+    }, 
+    playToolAnima: function(type) {
+        cc.log("playToolAnima")
+        this.toolAnima.active = true;
+        var discoball = this.toolAnima.getChildByName("discoball")
+        var boom = this.toolAnima.getChildByName("boom")
+        var arrSkinDisco = ["Disco_yellow", "Disco_red", "Disco_orange", "Disco_green", "Disco_blue", "Disco_pink"]
+        if(type == 2){      
+            boom.active = true 
+            boom.getChildByName("firework").active = true       
+            var anim = boom.getComponent(cc.Animation);
+            anim.play("tool_bomb")
+        }else if(type == 3){     
+            discoball.active = true
+            discoball.getComponent("Spine").setNewSkin(arrSkinDisco[this.discoType])
+            discoball.getComponent("Spine").play("Appear", 1)  
+        }
+    },           
 });

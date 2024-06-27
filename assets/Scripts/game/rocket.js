@@ -32,10 +32,8 @@ cc.Class({
                 var indexValue = utils.indexValue(grid.x, grid.y);
                 if (null != gameData.starSprite[indexValue]) {
                     var block = this.getNodeBygGrid(grid);
-                    if(block._stoneType == 40){             
-                        //if(!arr.includes(grid)){
-                            this.arrCustom.push(grid)
-                        //}
+                    if(block._stoneType == 40 || block._stoneType == 41){             
+                        this.arrCustom.push(grid)
                     }
                 }
             } else if (this.direction == psconfig.direction.DOWN) {
@@ -46,10 +44,8 @@ cc.Class({
                 var indexValue = utils.indexValue(grid.x, grid.y);
                 if (null != gameData.starSprite[indexValue]) {
                     var block = this.getNodeBygGrid(grid);
-                    if(block._stoneType == 40){
-                        //if(!arr.includes(grid)){
-                            this.arrCustom.push(grid)
-                        //}
+                    if(block._stoneType == 40 || block._stoneType == 41){
+                        this.arrCustom.push(grid)
                     }
                 }
             } else if (this.direction == psconfig.direction.LEFT) {
@@ -60,10 +56,8 @@ cc.Class({
                 var indexValue = utils.indexValue(grid.x, grid.y);
                 if (null != gameData.starSprite[indexValue]) {
                     var block = this.getNodeBygGrid(grid);
-                    if(block._stoneType == 40){
-                        //if(!arr.includes(grid)){
-                            this.arrCustom.push(grid)
-                        //}
+                    if(block._stoneType == 40 || block._stoneType == 41){
+                        this.arrCustom.push(grid)
                     }
                 }
             } else if (this.direction == psconfig.direction.RIGHT) {
@@ -74,10 +68,8 @@ cc.Class({
                 var indexValue = utils.indexValue(grid.x, grid.y);
                 if (null != gameData.starSprite[indexValue]) {
                     var block = this.getNodeBygGrid(grid);
-                    if(block._stoneType == 40){
-                        //if(!arr.includes(grid)){
-                            this.arrCustom.push(grid)
-                        //}
+                    if(block._stoneType == 40 || block._stoneType == 41){
+                        this.arrCustom.push(grid)
                     }
                 }
             }

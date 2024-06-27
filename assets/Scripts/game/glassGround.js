@@ -83,19 +83,23 @@ cc.Class({
             var n = this.spriteList[i]
             var a = n.getComponent("ground")
             var o = n.parent.convertToWorldSpaceAR(n.position);
-            a.bombCount > 1 ? (a.bombCount--,
-            a.hitGround(),
-            cc.systemEvent.emit("HIT_GRASS_ANIMATION", {
-                worldPos: o,
-                index: 1
-            })) : (cc.systemEvent.emit("HIT_GRASS_ANIMATION", {
-                worldPos: o,
-                index: 2
-            }),
-            this.grassPool.put(n),
-            this.spriteList[i] = null,
-            this.groundList[t.x][t.y] = 0,
-            this.judgeSquirrelIsHide())
+            if(a.bombCount > 1){
+                a.bombCount--,
+                a.hitGround(),
+                cc.systemEvent.emit("HIT_GRASS_ANIMATION", {
+                    worldPos: o,
+                    index: 1
+                })
+            }else{
+                cc.systemEvent.emit("HIT_GRASS_ANIMATION", {
+                    worldPos: o,
+                    index: 2
+                }),
+                this.grassPool.put(n),
+                this.spriteList[i] = null,
+                this.groundList[t.x][t.y] = 0,
+                this.judgeSquirrelIsHide()
+            }
         }
     },
     judgeSquirrelIsHide: function() {

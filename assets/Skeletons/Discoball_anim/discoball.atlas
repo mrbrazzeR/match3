@@ -1,0 +1,76 @@
+
+discoball.png
+size: 249, 1016
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+1
+  rotate: false
+  xy: 116, 789
+  size: 131, 90
+  orig: 131, 90
+  offset: 0, 0
+  index: -1
+Color
+  rotate: true
+  xy: 116, 654
+  size: 133, 130
+  orig: 133, 130
+  offset: 0, 0
+  index: -1
+Color2
+  rotate: true
+  xy: 116, 389
+  size: 133, 69
+  orig: 133, 69
+  offset: 0, 0
+  index: -1
+Core
+  rotate: false
+  xy: 116, 524
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+Highlight
+  rotate: true
+  xy: 187, 407
+  size: 115, 40
+  orig: 125, 45
+  offset: 6, 2
+  index: -1
+Line
+  rotate: false
+  xy: 2, 183
+  size: 179, 179
+  orig: 359, 359
+  offset: 90, 90
+  index: -1
+Line2
+  rotate: true
+  xy: 59, 417
+  size: 597, 55
+  orig: 625, 55
+  offset: 2, 0
+  index: -1
+Line2_color
+  rotate: true
+  xy: 2, 364
+  size: 650, 55
+  orig: 650, 55
+  offset: 0, 0
+  index: -1
+Line_color
+  rotate: false
+  xy: 2, 2
+  size: 179, 179
+  orig: 179, 179
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: true
+  xy: 116, 881
+  size: 133, 131
+  orig: 133, 131
+  offset: 0, 0
+  index: -1

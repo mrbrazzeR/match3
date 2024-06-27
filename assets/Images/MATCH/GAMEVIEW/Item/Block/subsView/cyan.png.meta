@@ -9,7 +9,7 @@
   "genMipmaps": false,
   "packable": true,
   "width": 31,
-  "height": 43,
+  "height": 42,
   "platformSettings": {},
   "subMetas": {
     "cyan": {
@@ -25,9 +25,9 @@
       "trimX": 0,
       "trimY": 0,
       "width": 31,
-      "height": 43,
+      "height": 42,
       "rawWidth": 31,
-      "rawHeight": 43,
+      "rawHeight": 42,
       "borderTop": 0,
       "borderBottom": 0,
       "borderLeft": 0,

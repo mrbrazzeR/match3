@@ -47,11 +47,15 @@ cc.Class({
         this.life = 5
         cc.systemEvent.on("FINISHEDCOLLECT", this.finishedCollectEffect, this)
         cc.systemEvent.on("STOP_TOUCH", this.stopTouchOperate, this)
+        cc.systemEvent.on("TEST_GAME", this.testGame, this)
         ///
         utils.resize()    
         ///
         //gameData.tournamentData = {ref:"User create",time:"2024-06-01T06:44:56.965Z",level:5}
         ///
+    },
+    testGame(data){
+        cc.log("test", data)
     },
     start(){ 
         var _this = this;
@@ -714,6 +718,10 @@ cc.Class({
         this.btn_farmEnter.getComponent(cc.Sprite).spriteFrame = this.list_farmEnter[0]
         this.btn_farmEnter.getComponent(cc.Button).interactable = true
     }, */
-    
+    goEditorLevel(){
+        this.scheduleOnce(function() {
+            cc.director.loadScene("editorScene")
+        }, 0.1)
+    }
     
 });

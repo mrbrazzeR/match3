@@ -29,8 +29,12 @@ cc.Class({
         this.fail.runAction(cc.scaleTo(1, 1).easing(cc.easeBackOut()))
     },
     showView: function(e) {
-        this.node.active = !0,
-        1 == e ? this.successView() : this.failView(),
+        this.node.active = !0
+        if( 1 == e){
+            this.successView()
+        }else{
+            this.failView()
+        }
         this.scheduleOnce(function() {
             cc.director.dialogScript.hideResultTipsView(e)
         }, 2)
@@ -49,8 +53,9 @@ cc.Class({
               , n = cc.director.container.target.step.node.parent.convertToWorldSpaceAR(cc.director.container.target.step.node);
               cc.director.container.target.changeStepToRocket(t, n),
               cc.director.container.target.submitPlayerUsedStep()
-        } else
+        } else{
             cc.director.dialogScript.showVideoRewardView()
+        }
     },
     
 });

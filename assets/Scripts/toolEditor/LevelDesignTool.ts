@@ -51,9 +51,9 @@ export default class levelDesignTool extends cc.Component {
   targetControlPre: cc.Prefab = null;
 
   @property(cc.Node)
-  colorLimitPos:cc.Node=null;
+  colorLimitPos: cc.Node = null;
   @property(cc.Prefab)
-  colorLimitPre:cc.Prefab=null;
+  colorLimitPre: cc.Prefab = null;
 
   matrix: number[][] = [];
   grassMatrix: number[][] = [];
@@ -65,32 +65,35 @@ export default class levelDesignTool extends cc.Component {
   squirrelList: cc.Node[] = [];
   customBlockList: customBlockModified[] = [];
   customBlockNodeList: cc.Node[] = [];
- 
+
 
   private targetList: number[][] = [];
   private targetNode: cc.Node[] = [];
 
-  private colorLimitList:number[]=[];
-  private colorNode:cc.Node[]=[];
+  private colorLimitList: number[] = [];
+  private colorNode: cc.Node[] = [];
 
   private frame: cc.SpriteFrame;
   private id: number;
   private phase: PHASE;
   private startPoint: Point = null;
-  protected onLoad(): void {
+  tempAvatar: number = 0;
+  tempCan: number = 0;
+  tempLevel: string = "";
+  onLoad() {
     this.startPoint = { x: -1, y: -1 };
     cc.systemEvent.on('BLOCKCLICK', this.getBlock, this);
     cc.systemEvent.on('LEVELNODECLICK', this.changeNode, this);
     cc.systemEvent.on('STARTDRAGGING', this.startDragging, this)
     cc.systemEvent.on('ENDDRAGGING', this.endDragging, this)
     cc.systemEvent.on('SAVE', this.addTarget, this)
-    cc.systemEvent.on('COLORLIMIT',this.addColorLimit,this)
+    cc.systemEvent.on('COLORLIMIT', this.addColorLimit, this)
     this.phase = PHASE.ADD;
   }
 
   protected start(): void {
     let index = 0;
-    for (let i = 0; i < 42; i++) {
+    for (let i = 0; i < 45; i++) {
       //normal tile
       if (i >= 0 && i <= 12) {
         var b = cc.instantiate(this.block);
@@ -98,8 +101,8 @@ export default class levelDesignTool extends cc.Component {
         let row = index % 10;
         let col = Math.floor(index / 10);
         b.parent = this.spawnPosition;
-        b.setPosition(row * 75, col * 75)
-        b.setContentSize(75, 75)
+        b.setPosition(row * 73, col * 73)
+        b.setContentSize(70, 70)
         index++;
       }
       //Various special types
@@ -109,8 +112,8 @@ export default class levelDesignTool extends cc.Component {
         let row = index % 10;
         let col = Math.floor(index / 10);
         b.parent = this.spawnPosition;
-        b.setPosition(row * 75, col * 75)
-        b.setContentSize(75, 75)
+        b.setPosition(row * 73, col * 73)
+        b.setContentSize(70, 70)
         index++;
       }
     }
@@ -132,7 +135,6 @@ export default class levelDesignTool extends cc.Component {
     this.frame = eventData.img;
     this.id = eventData.id;
   }
-
   changeNode(eventData) {
 
     let x = eventData.x;
@@ -196,7 +198,7 @@ export default class levelDesignTool extends cc.Component {
           let count: number = +this.countingBox.string
           this.frame = this.baseFrame;
           if (size == 1) {
-            if (this.matrix[x][y] == 40)
+            if (this.matrix[x][y] == 40||this.matrix[x][y]==41)
               return
 
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
@@ -207,11 +209,12 @@ export default class levelDesignTool extends cc.Component {
             cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, count)
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_avarta"])
             this.customBlockNodeList.push(cus)
+            this.tempAvatar++;
           } else {
             if (x > 7 || y > 7) { return }
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
-                if (this.matrix[i][j] == 40) {
+                if (this.matrix[i][j] == 41 || this.matrix[i][j] == 40) {
                   return
                 }
               }
@@ -228,6 +231,7 @@ export default class levelDesignTool extends cc.Component {
             cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, count)
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_avarta"])
             this.customBlockNodeList.push(cus)
+            this.tempAvatar++;
           }
         }
         else if (this.id == 41) {
@@ -235,7 +239,7 @@ export default class levelDesignTool extends cc.Component {
           let count: number = +this.countingBox.string
           this.frame = this.baseFrame;
           if (size == 1) {
-            if (this.matrix[x][y] == 41)
+            if (this.matrix[x][y] == 40||this.matrix[x][y]==41)
               return
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 41;
@@ -243,14 +247,16 @@ export default class levelDesignTool extends cc.Component {
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
             let cus = cc.instantiate(this.customCan);
             cus.parent = this.levelMap;
+            if (count != 9) count = 9;
             cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, count)
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_can"])
             this.customBlockNodeList.push(cus)
+            this.tempCan += 9;
           } else {
-            if (x >7 || y > 7) { return }
+            if (x > 7 || y > 7) { return }
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
-                if (this.matrix[i][j] == 41) {
+                if (this.matrix[i][j] == 41 || this.matrix[i][j] == 40) {
                   return
                 }
               }
@@ -264,10 +270,16 @@ export default class levelDesignTool extends cc.Component {
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x + 1, y: y + 1 } }
             let cus = cc.instantiate(this.customCan);
             cus.parent = this.levelMap;
+            if (count != 9) count = 9;
             cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, count)
             this.customBlockList.push([[rec.bottomLeft.x, rec.bottomLeft.y], [rec.topRight.x, rec.topRight.y], count, "custom_can"])
             this.customBlockNodeList.push(cus)
+            this.tempCan += 9
           }
+        }
+        else if (this.id == 42) {
+          this.matrix[eventData.x][eventData.y] = this.id;
+          isNormal = true;
         }
 
         cc.systemEvent.emit('CHANGENODE', { x: eventData.x, y: eventData.y, img: this.frame, isGrass: isGrass, isBubble: isBubble, isNormal });
@@ -349,12 +361,59 @@ export default class levelDesignTool extends cc.Component {
 
     lastCustom.destroy();
     let pos = this.customBlockList.pop();
+    if (pos[3] == "custom_avarta") {
+      this.tempAvatar--;
+    }
+    if (pos[3] == "custom_can") {
+      this.tempCan -= 9
+    }
     for (let i = pos[0][0]; i <= pos[1][0]; i++)
       for (let j = pos[0][1]; j <= pos[1][1]; j++) {
         this.matrix[i][j] = -2;
       }
   }
-  showMatrix() {
+  testMatrix() {
+    let index = 1;
+    let grassRectangles1 = this.findLargestRectangles(this.grassMatrix, index);
+    grassRectangles1.forEach(element => {
+      let bottomLeft = element.bottomLeft
+      let topRight = element.topRight;
+      this.grassSquare.push([[bottomLeft.x, bottomLeft.y], [topRight.x, topRight.y], index])
+    });
+    index = 2;
+    grassRectangles1 = this.findLargestRectangles(this.grassMatrix, index);
+    grassRectangles1.forEach(element => {
+      let bottomLeft = element.bottomLeft
+      let topRight = element.topRight;
+      this.grassSquare.push([[bottomLeft.x, bottomLeft.y], [topRight.x, topRight.y], index])
+    });
+    let bubbleRectangles = this.findLargestRectangles(this.bubbleMatrix, 1);
+    bubbleRectangles.forEach(element => {
+      let bottomLeft = element.bottomLeft
+      let topRight = element.topRight;
+      this.bubbleSquare.push([[bottomLeft.x, bottomLeft.y], [topRight.x, topRight.y], 1])
+    })
+    let score = [];
+    this.scoreStandard.forEach(element => {
+      score.push(element.string)
+    });
+    
+    let obj = {
+      mapList: this.matrix,
+      step: this.step.string,
+      targetList: this.targetList,
+      scoreStandard: score,
+      colorLimit: this.colorLimitList,
+      customBlocks: this.customBlockList,
+      grassList: this.grassSquare,
+      stoneList: this.squirrelSquare,
+      bubbleList: this.bubbleSquare
+    }
+    console.log(obj)
+    cc.systemEvent.emit("TESTLEVEL", obj)
+  }
+
+  saveMatrix() {
     let index = 1;
     let grassRectangles1 = this.findLargestRectangles(this.grassMatrix, index);
     grassRectangles1.forEach(element => {
@@ -384,7 +443,7 @@ export default class levelDesignTool extends cc.Component {
       step: this.step.string,
       targetList: this.targetList,
       scoreStandard: score,
-      colorLimit:this.colorLimitList,
+      colorLimit: this.colorLimitList,
       customBLocks: this.customBlockList,
       grassList: this.grassSquare,
       stoneList: this.squirrelSquare,
@@ -392,14 +451,16 @@ export default class levelDesignTool extends cc.Component {
     }
     let jsonString = JSON.stringify(obj);
     const removedBackslashesString = jsonString.replace(/\"/g, '');
-    let modifiedString = removedBackslashesString.replaceAll("custom_avarta","'custom_avarta'");
-    modifiedString=modifiedString.replaceAll("custom_can","'custom_can'")
+    let modifiedString = removedBackslashesString.replaceAll("custom_avarta", "'custom_avarta'");
+    modifiedString = modifiedString.replaceAll("custom_can", "'custom_can'")
+    this.tempLevel = modifiedString;
     let a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(modifiedString)], { type: 'application/json' }));
     a.download = 'data.json';
     document.body.appendChild(a);
     a.click();
   }
+
   findLargestRectangles(matrix: number[][], id: number): Rectangle[] {
     const rectangles: Rectangle[] = [];
     const rows = matrix.length;
@@ -466,30 +527,36 @@ export default class levelDesignTool extends cc.Component {
     this.targetNode.push(tar);
   }
   addTarget(eventData) {
-    this.targetList[eventData.idTarget] = [eventData.id, eventData.count];
+    if (eventData.id == 41)
+      this.targetList[eventData.idTarget] = [eventData.id, this.tempCan];
+    else if (eventData.id == 40) {
+      if (eventData.count > this.tempAvatar)
+        this.targetList[eventData.idTarget] = [eventData.id, this.tempAvatar];
+    }
+    else { this.targetList[eventData.idTarget] = [eventData.id, eventData.count]; }
   }
   removeLastTarget() {
     if (this.targetNode.length > 0) {
       let tar = this.targetNode.pop();
+      this.targetList.pop();
       tar.destroy();
     }
   }
-  addColorLimit(eventData){
-    this.colorLimitList[eventData.targetId]=eventData.id;
+  addColorLimit(eventData) {
+    this.colorLimitList[eventData.targetId] = eventData.id;
   }
 
-  addemptyColor(){
+  addemptyColor() {
     let tar = cc.instantiate(this.colorLimitPre);
-    console.log(this.colorNode)
     tar.parent = this.colorLimitPos
     tar.getComponent(colorLimitControl).setView(this.colorNode.length)
     tar.setPosition(0, -this.colorNode.length * 80);
     this.colorNode.push(tar);
   }
-  removeLastColor(){
+  removeLastColor() {
     if (this.colorNode.length > 0) {
       this.colorLimitList.pop();
-      let tar= this.colorNode.pop();
+      let tar = this.colorNode.pop();
       tar.destroy();
     }
   }
