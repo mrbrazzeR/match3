@@ -4,6 +4,7 @@ import customBlockDesign from "./customBlockDesign";
 import levelNode from "./levelNode";
 import squirrelDesign from "./squirrelDesign";
 import targetControl from "./targetControl";
+import { level } from "./levelResource"
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -55,6 +56,9 @@ export default class levelDesignTool extends cc.Component {
   @property(cc.Prefab)
   colorLimitPre: cc.Prefab = null;
 
+  @property(cc.EditBox)
+  select: cc.EditBox = null;
+
   matrix: number[][] = [];
   grassMatrix: number[][] = [];
   bubbleMatrix: number[][] = [];
@@ -66,20 +70,24 @@ export default class levelDesignTool extends cc.Component {
   customBlockList: customBlockModified[] = [];
   customBlockNodeList: cc.Node[] = [];
 
-
   private targetList: number[][] = [];
   private targetNode: cc.Node[] = [];
 
   private colorLimitList: number[] = [];
   private colorNode: cc.Node[] = [];
 
+  private lvNode: levelNode[][] = [];
+  private blockDes: blockDesign[] = [];
+
   private frame: cc.SpriteFrame;
   private id: number;
   private phase: PHASE;
   private startPoint: Point = null;
+  currentLevel: number = 0;
   tempAvatar: number = 0;
   tempCan: number = 0;
   tempLevel: string = "";
+  score: number[] = [];
   onLoad() {
     this.startPoint = { x: -1, y: -1 };
     cc.systemEvent.on('BLOCKCLICK', this.getBlock, this);
@@ -104,6 +112,7 @@ export default class levelDesignTool extends cc.Component {
         b.setPosition(row * 73, col * 73)
         b.setContentSize(70, 70)
         index++;
+        this.blockDes.push(b.getComponent(blockDesign));
       }
       //Various special types
       else if (i >= 20) {
@@ -115,9 +124,11 @@ export default class levelDesignTool extends cc.Component {
         b.setPosition(row * 73, col * 73)
         b.setContentSize(70, 70)
         index++;
+        this.blockDes.push(b.getComponent(blockDesign));
       }
     }
 
+    this.lvNode = Array(9).fill(null).map(() => Array(null));
     //setup
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
@@ -125,6 +136,7 @@ export default class levelDesignTool extends cc.Component {
         n.parent = this.levelMap;
         n.setPosition(i * 75, j * 75);
         n.getComponent(levelNode).setPos(i, j)
+        this.lvNode[j][i] = n.getComponent(levelNode);
       }
     }
     this.matrix = Array(9).fill(null).map(() => Array(9).fill(-2));
@@ -163,6 +175,7 @@ export default class levelDesignTool extends cc.Component {
           //normal block
           this.matrix[x][y] = this.id;
           isNormal = true;
+          this.bubbleMatrix[x][y]=-2;
         }
         else if (this.id >= 20 && this.id <= 39 && this.id != 38 && this.id != 28) {
           //main view block
@@ -320,8 +333,6 @@ export default class levelDesignTool extends cc.Component {
     let temp = this.grassMatrix[this.startPoint.x][this.startPoint.y];
     //check all tile is grass 2
     let endPoint: Point = { x: eventData.x, y: eventData.y };
-    console.log(this.startPoint)
-    console.log(endPoint)
     let rec: Rectangle = {
       bottomLeft: {
         x: this.startPoint.x > endPoint.x ? endPoint.x : this.startPoint.x, y: this.startPoint.y > endPoint.y ? endPoint.y : this.startPoint.y
@@ -338,11 +349,8 @@ export default class levelDesignTool extends cc.Component {
     }
     let sq = cc.instantiate(this.squirrel);
     this.squirrelList.push(sq)
-
-    console.log(rec)
     sq.getComponent(squirrelDesign).comfirmBearWidthAndHeight(rec);
     sq.parent = this.levelMap;
-    console.log(sq.position)
     this.squirrelSquare.push([[this.startPoint.x, this.startPoint.y], [endPoint.x, endPoint.y]])
   }
   removeSquirrel() {
@@ -393,16 +401,18 @@ export default class levelDesignTool extends cc.Component {
       let topRight = element.topRight;
       this.bubbleSquare.push([[bottomLeft.x, bottomLeft.y], [topRight.x, topRight.y], 1])
     })
-    let score = [];
+
+    let sc = [];
     this.scoreStandard.forEach(element => {
-      score.push(element.string)
+      sc.push(+element.string)
     });
+    this.score = sc;
     //avarta
     if (this.tempAvatar > 0) {
       let index = this.targetList.findIndex(item => item[0] === 40);
       if (index !== -1) {
         this.targetList[index][1] = this.tempAvatar
-      }else {
+      } else {
         this.targetList.push([40, this.tempAvatar])
       }
     }
@@ -411,7 +421,7 @@ export default class levelDesignTool extends cc.Component {
       let index = this.targetList.findIndex(item => item[0] === 41);
       if (index !== -1) {
         this.targetList[index][1] = this.tempCan
-      }else {
+      } else {
         this.targetList.push([41, this.tempCan])
       }
     }
@@ -419,7 +429,7 @@ export default class levelDesignTool extends cc.Component {
       mapList: this.matrix,
       step: this.step.string,
       targetList: this.targetList,
-      scoreStandard: score,
+      scoreStandard: this.score,
       colorLimit: this.colorLimitList,
       customBlocks: this.customBlockList,
       grassList: this.grassSquare,
@@ -450,10 +460,11 @@ export default class levelDesignTool extends cc.Component {
       let topRight = element.topRight;
       this.bubbleSquare.push([[bottomLeft.x, bottomLeft.y], [topRight.x, topRight.y], 1])
     })
-    let score = [];
+    let sc = [];
     this.scoreStandard.forEach(element => {
-      score.push(element.string)
+      sc.push(+element.string)
     });
+    this.score = sc;
     //avarta
     if (this.tempAvatar > 0) {
       let index = this.targetList.findIndex(item => item[0] === 40);
@@ -463,6 +474,10 @@ export default class levelDesignTool extends cc.Component {
       else {
         this.targetList.push([40, this.tempAvatar])
       }
+    }
+    else {
+      let index = this.targetList.findIndex(item => item[0] === 40);
+      if (index != -1) this.targetList.splice(index, 1)
     }
     //can
     if (this.tempCan > 0) {
@@ -474,29 +489,206 @@ export default class levelDesignTool extends cc.Component {
         this.targetList.push([41, this.tempCan])
       }
     }
+    else {
+      let index = this.targetList.findIndex(item => item[0] === 41);
+      if (index != -1) this.targetList.splice(index, 1)
+    }
     let obj = {
       mapList: this.matrix,
-      step: this.step.string,
+      step: +this.step.string,
       targetList: this.targetList,
-      scoreStandard: score,
+      scoreStandard: this.score,
       colorLimit: this.colorLimitList,
       customBLocks: this.customBlockList,
       grassList: this.grassSquare,
       stoneList: this.squirrelSquare,
       bubbleList: this.bubbleSquare
     }
-    let jsonString = JSON.stringify(obj);
-    const removedBackslashesString = jsonString.replace(/\"/g, '');
-    let modifiedString = removedBackslashesString.replaceAll("custom_avarta", "'custom_avarta'");
-    modifiedString = modifiedString.replaceAll("custom_can", "'custom_can'")
-    this.tempLevel = modifiedString;
+    console.log(obj)
+    // let jsonString = JSON.stringify(obj);
+    // const removedBackslashesString = jsonString.replace(/\"/g, '');
+    // let modifiedString = removedBackslashesString.replaceAll("custom_avarta", "'custom_avarta'");
+    // modifiedString = modifiedString.replaceAll("custom_can", "'custom_can'")
+    level[this.currentLevel - 1] = obj;
+    // let a = document.createElement('a');
+    // a.href = URL.createObjectURL(new Blob([JSON.stringify(modifiedString)], { type: 'application/json' }));
+    // a.download = 'data.json';
+    // document.body.appendChild(a);
+    // a.click();
+  }
+  saveAll() {
     let a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(modifiedString)], { type: 'application/json' }));
-    a.download = 'data.json';
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(level)], { type: 'application/json' }));
+    a.download = 'data.ts';
     document.body.appendChild(a);
     a.click();
   }
+  selectLevel() {
+    //reset
 
+    this.customBlockNodeList.forEach(element => {
+      element.destroy();
+    });
+    this.targetNode.forEach(element => {
+      element.destroy();
+    });
+    this.colorNode.forEach(element => {
+      element.destroy();
+    });
+    this.customBlockNodeList = [];
+    this.targetNode = [];
+    this.colorNode = [];
+    this.currentLevel = +this.select.string
+    if (level.length < this.currentLevel)
+      return
+    let lv = level[this.currentLevel - 1];
+    this.targetList = lv.targetList;
+    this.colorLimitList = lv.colorLimit;
+    this.score = lv.scoreStandard;
+    this.step.string = lv.step.toString();
+    for (let i = 0; i < lv.targetList.length; i++) {
+      if (this.targetList[i][0] != 40 && this.targetList[i][0] != 41) {
+        this.addTarget({ id: this.targetList[i][0], idTarget: i, count: this.targetList[i][1] })
+        let tar = cc.instantiate(this.targetControlPre);
+        tar.parent = this.targetPos
+        tar.getComponent(targetControl).setView(this.targetNode.length)
+        tar.setPosition(0, -this.targetNode.length * 180);
+        this.targetNode.push(tar);
+      }
+    }
+
+    for (let i = 0; i < lv.colorLimit.length; i++) {
+      this.addColorLimit({ id: this.colorLimitList[i][0], idTarget: i, count: this.targetList[i][1] })
+      let tar = cc.instantiate(this.colorLimitPre);
+      tar.parent = this.colorLimitPos
+      tar.getComponent(colorLimitControl).setView(this.colorNode.length)
+      tar.setPosition(0, -this.colorNode.length * 80);
+      this.colorNode.push(tar);
+    }
+    let map = lv.mapList;
+    let fr;
+    //setting custom box
+    let customMap = lv.customBLocks;
+    let cusList: customBlockModified[] = [];
+    customMap.forEach(element => {
+      let first: number[] = element[0] as number[];
+      let second: number[] = element[1] as number[];
+      let third: number = element[2] as number;
+      let st: string = element[3] as string;
+      cusList.push([first, second, third, st])
+    })
+    this.customBlockList = cusList;
+    cusList.forEach(element => {
+      if (element[3] == 'custom_avarta') {
+        this.tempAvatar++;
+        let rec: Rectangle = { bottomLeft: { x: element[0][0], y: element[0][1] }, topRight: { x: element[1][0], y: [1][1] } }
+        let cus = cc.instantiate(this.customAvatar);
+        let test=cc.instantiate(this.block)
+        test.parent=this.levelMap;
+        test.setPosition(0,0)
+        test.getComponent(blockDesign).changeStoneNum(2)
+        cus.parent = this.levelMap;
+        for (let i = element[0][0]; i <= element[1][0]; i++) {
+          for (let j = element[1][0]; j <= element[1][1]; j++) {
+            cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
+          }
+        }
+        cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, element[2])
+        this.customBlockNodeList.push(cus)
+        cus.zIndex = 100
+      }
+      if (element[3] == 'custom_can') {
+        let rec: Rectangle = { bottomLeft: { x: element[0][0], y: element[0][1] }, topRight: { x: element[1][0], y: [1][1] } }
+        let cus = cc.instantiate(this.customCan);
+        cus.parent = this.levelMap;
+        cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, element[2])
+        for (let i = element[0][0]; i <= element[1][0]; i++) {
+          for (let j = element[1][0]; j <= element[1][1]; j++) {
+            cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
+          }
+        }
+        let test=cc.instantiate(this.block)
+        test.parent=this.levelMap;
+        test.setPosition(0,0)
+        this.customBlockNodeList.push(cus)
+        test.getComponent(blockDesign).changeStoneNum(2)
+        cus.zIndex = 100
+
+      }
+    });
+    //set normal frame
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+
+        //special Tile
+        if (map[i][j] != 40 && map[i][j] != 41)
+        //get base frame
+        {
+          this.blockDes.forEach(element => {
+            if (element._stoneType == map[i][j])
+              fr = element.getFrame()
+
+          });
+          if (map[i][j] == -2) {
+            fr = this.baseFrame
+          }
+          this.lvNode[i][j].changeBaseFrame(fr)
+        }
+        this.matrix[i][j] = map[i][j];
+      }
+    }
+    //setting bubble and grass
+    let bubbleMap = lv.bubbleList;
+    let bbList: grassModified[] = [];
+    bubbleMap.forEach(element => {
+      let first: number[] = element[0] as number[];
+      let second: number[] = element[1] as number[];
+      let single: number = element[2] as number;
+      bbList.push([first, second, single])
+    });
+    this.bubbleSquare = bbList;
+    bubbleMap.forEach(element => {
+      for (let i = element[0][0]; i <= element[1][0]; i++) {
+        for (let j = element[0][1]; j <= element[1][1]; j++) {
+          this.lvNode[i][j].changeBubbleFrame(!0);
+        }
+      }
+    });
+    let grassMap = lv.grassList;
+    bbList = [];
+    grassMap.forEach(element => {
+      let first: number[] = element[0] as number[];
+      let second: number[] = element[1] as number[];
+      let single: number = element[2] as number;
+      bbList.push([first, second, single])
+    });
+    this.grassSquare = bbList
+    this.grassSquare.forEach(element => {
+      for (let i = element[0][0]; i <= element[1][0]; i++) {
+        for (let j = element[0][1]; j <= element[1][1]; j++) {
+          this.lvNode[i][j].changeGrassFrame(!0);
+          this.grassMatrix[i][j] = element[2]
+        }
+      }
+    })
+    //setting squirrel
+    let squirrelMap = lv.stoneList;
+    let sqList: squirrelModified[] = [];
+    squirrelMap.forEach(element => {
+      let first: number[] = element[0] as number[];
+      let second: number[] = element[1] as number[];
+      sqList.push([first, second])
+    });
+    this.squirrelSquare = sqList;
+    squirrelMap.forEach(element => {
+      let sq = cc.instantiate(this.squirrel);
+      this.squirrelList.push(sq)
+      sq.parent = this.levelMap;
+      let rec: Rectangle = { bottomLeft: { x: element[0][0], y: element[0][1] }, topRight: { x: element[1][0], y: element[1][1] } }
+      sq.getComponent(squirrelDesign).comfirmBearWidthAndHeight(rec);
+    })
+
+  }
   findLargestRectangles(matrix: number[][], id: number): Rectangle[] {
     const rectangles: Rectangle[] = [];
     const rows = matrix.length;
@@ -596,6 +788,7 @@ export default class levelDesignTool extends cc.Component {
       tar.destroy();
     }
   }
+
 }
 
 enum PHASE {
