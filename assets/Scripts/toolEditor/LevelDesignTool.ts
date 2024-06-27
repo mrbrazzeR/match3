@@ -198,7 +198,7 @@ export default class levelDesignTool extends cc.Component {
           let count: number = +this.countingBox.string
           this.frame = this.baseFrame;
           if (size == 1) {
-            if (this.matrix[x][y] == 40||this.matrix[x][y]==41)
+            if (this.matrix[x][y] == 40 || this.matrix[x][y] == 41)
               return
 
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
@@ -239,7 +239,7 @@ export default class levelDesignTool extends cc.Component {
           let count: number = +this.countingBox.string
           this.frame = this.baseFrame;
           if (size == 1) {
-            if (this.matrix[x][y] == 40||this.matrix[x][y]==41)
+            if (this.matrix[x][y] == 40 || this.matrix[x][y] == 41)
               return
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 41;
@@ -397,7 +397,24 @@ export default class levelDesignTool extends cc.Component {
     this.scoreStandard.forEach(element => {
       score.push(element.string)
     });
-    
+    //avarta
+    if (this.tempAvatar > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 40);
+      if (index !== -1) {
+        this.targetList[index][1] = this.tempAvatar
+      }else {
+        this.targetList.push([40, this.tempAvatar])
+      }
+    }
+    //can
+    if (this.tempCan > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 41);
+      if (index !== -1) {
+        this.targetList[index][1] = this.tempCan
+      }else {
+        this.targetList.push([41, this.tempCan])
+      }
+    }
     let obj = {
       mapList: this.matrix,
       step: this.step.string,
@@ -409,7 +426,6 @@ export default class levelDesignTool extends cc.Component {
       stoneList: this.squirrelSquare,
       bubbleList: this.bubbleSquare
     }
-    console.log(obj)
     cc.systemEvent.emit("TESTLEVEL", obj)
   }
 
@@ -438,6 +454,26 @@ export default class levelDesignTool extends cc.Component {
     this.scoreStandard.forEach(element => {
       score.push(element.string)
     });
+    //avarta
+    if (this.tempAvatar > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 40);
+      if (index !== -1) {
+        this.targetList[index][1] = this.tempAvatar
+      }
+      else {
+        this.targetList.push([40, this.tempAvatar])
+      }
+    }
+    //can
+    if (this.tempCan > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 41);
+      if (index !== -1) {
+        this.targetList[index][1] = this.tempCan
+      }
+      else {
+        this.targetList.push([41, this.tempCan])
+      }
+    }
     let obj = {
       mapList: this.matrix,
       step: this.step.string,
@@ -538,9 +574,9 @@ export default class levelDesignTool extends cc.Component {
   removeLastTarget() {
     if (this.targetNode.length > 0) {
       let tar = this.targetNode.pop();
-      this.targetList.pop();
       tar.destroy();
     }
+    while (this.targetList.length > this.targetNode.length) { this.targetList.pop(); }
   }
   addColorLimit(eventData) {
     this.colorLimitList[eventData.targetId] = eventData.id;

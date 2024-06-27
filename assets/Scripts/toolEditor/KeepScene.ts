@@ -18,7 +18,6 @@ export default class keepScene extends cc.Component {
         this.designNode.active=false;
         this.header.active=true;
         cc.systemEvent.emit("SETUPLEVEL",eventData)
-        console.log("test new level", eventData)
     }
     finishTest(){
         this.designNode.active=true;

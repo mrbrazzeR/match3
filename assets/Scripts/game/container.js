@@ -112,13 +112,11 @@ cc.Class({
         }
     },
     testlevel: function (e) {
-        console.log("test")
         this.countShuffleOver = 0
         this.customNodeList = []
         this.grassGround.reset()
         this.bubbleGround.reset()
         this.currentLevel = 0;
-        console.log(e)
         var step;
         cc.game.GameMoveStatus = 0
         cc.game.windmillCount = 0
