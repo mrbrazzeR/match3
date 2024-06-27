@@ -175,7 +175,7 @@ export default class levelDesignTool extends cc.Component {
           //normal block
           this.matrix[x][y] = this.id;
           isNormal = true;
-          this.bubbleMatrix[x][y]=-2;
+          this.bubbleMatrix[x][y] = -2;
         }
         else if (this.id >= 20 && this.id <= 39 && this.id != 38 && this.id != 28) {
           //main view block
@@ -216,6 +216,8 @@ export default class levelDesignTool extends cc.Component {
 
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 40;
+            this.grassMatrix[x][y] = -2;
+            this.bubbleMatrix[x][y] = -2;
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
             let cus = cc.instantiate(this.customAvatar);
             cus.parent = this.levelMap;
@@ -235,6 +237,8 @@ export default class levelDesignTool extends cc.Component {
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
                 this.matrix[i][j] = 40
+                this.grassMatrix[x][y] = -2;
+                this.bubbleMatrix[x][y] = -2;
                 cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
               }
             }
@@ -256,6 +260,8 @@ export default class levelDesignTool extends cc.Component {
               return
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             this.matrix[x][y] = 41;
+            this.grassMatrix[x][y] = -2;
+            this.bubbleMatrix[x][y] = -2;
             cc.systemEvent.emit('REMOVENODE', { x: x, y: y, frame: this.baseFrame })
             let rec: Rectangle = { bottomLeft: { x: x, y: y }, topRight: { x: x, y: y } }
             let cus = cc.instantiate(this.customCan);
@@ -277,6 +283,8 @@ export default class levelDesignTool extends cc.Component {
             for (let i = x; i < x + 2; i++) {
               for (let j = y; j < y + 2; j++) {
                 this.matrix[i][j] = 41
+                this.grassMatrix[x][y] = -2;
+                this.bubbleMatrix[x][y] = -2;
                 cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
               }
             }
@@ -583,9 +591,9 @@ export default class levelDesignTool extends cc.Component {
         this.tempAvatar++;
         let rec: Rectangle = { bottomLeft: { x: element[0][0], y: element[0][1] }, topRight: { x: element[1][0], y: [1][1] } }
         let cus = cc.instantiate(this.customAvatar);
-        let test=cc.instantiate(this.block)
-        test.parent=this.levelMap;
-        test.setPosition(0,0)
+        let test = cc.instantiate(this.block)
+        test.parent = this.levelMap;
+        test.setPosition(0, 0)
         test.getComponent(blockDesign).changeStoneNum(2)
         cus.parent = this.levelMap;
         for (let i = element[0][0]; i <= element[1][0]; i++) {
@@ -607,9 +615,9 @@ export default class levelDesignTool extends cc.Component {
             cc.systemEvent.emit('REMOVENODE', { x: i, y: j, frame: this.baseFrame })
           }
         }
-        let test=cc.instantiate(this.block)
-        test.parent=this.levelMap;
-        test.setPosition(0,0)
+        let test = cc.instantiate(this.block)
+        test.parent = this.levelMap;
+        test.setPosition(0, 0)
         this.customBlockNodeList.push(cus)
         test.getComponent(blockDesign).changeStoneNum(2)
         cus.zIndex = 100
