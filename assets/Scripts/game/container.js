@@ -96,6 +96,7 @@ cc.Class({
         this.customNodeList = []
         this.countShuffleOver = 0
         this.colorLimit = null
+        this.loadDataFromJson()
     },
     checkTarget: function () {
         let targetList = this.target.targetList
@@ -154,7 +155,24 @@ cc.Class({
             order: 1
         })
     },
-
+    loadDataFromJson: function () {
+        cc.assetManager.loadBundle("Data", (err, bundle) => {
+            if (err) {
+                // reject("Failed to load data bundle: ${err}");
+                console.log("err")
+                return;
+            }
+            bundle.load("LevelData", cc.JsonAsset, (err, data) => {
+                if (err) {
+                    console.log("err")
+                }
+                else {
+                    console.log(data)
+                    this.cacheLevel = data.json
+                }
+            })
+        })
+    },
     startNewGame: function () {
         this.countShuffleOver = 0
         this.customNodeList = []
@@ -172,8 +190,8 @@ cc.Class({
         this.canclePlayerNotice()
         cc.director.isPine = 0
         cc.director.checkLastPine = 0
-        if (this.currentLevel >= 0 && this.currentLevel < 300) {
-            levelResource = newLevelResource[this.currentLevel]
+        if (this.currentLevel >= 0 && this.currentLevel < this.cacheLevel.length) {
+            levelResource = this.cacheLevel[this.currentLevel]
             mapList = JSON.parse(JSON.stringify(levelResource.mapList))
             gameData.starMatrix = mapList
             this.list = levelResource.targetList
@@ -212,7 +230,7 @@ cc.Class({
         //////customBlocks
         var customBlocks = levelResource.customBlocks
         customBlocks && this.initCustomBlocks(customBlocks)
-        this.colorLimit = levelResource.colorLimit && e.colorLimit.length > 0 ? levelResource.colorLimit : null
+        this.colorLimit = levelResource.colorLimit && levelResource.colorLimit.length > 0 ? levelResource.colorLimit : null
         gameData.bestLevel > 0 && this.showTipsView()
         cc.director.dialogScript.goalDisplay.initGoalNumber(this.list)
         cc.director.videoCount = 1

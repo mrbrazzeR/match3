@@ -14,12 +14,10 @@ export default class squirrelDesign extends cc.Component {
         if (recWidth - recHeight > 0) {
             this.node.setAnchorPoint(0,0)
             this.node.setPosition(rec.bottomLeft.y * 75-75/2, rec.bottomLeft.x * 75-75/2)
-            console.log(rec.bottomLeft.x * 75, rec.bottomLeft.y * 75)
         }
         else { 
             this.node.setAnchorPoint(1,0)
             this.node.setPosition(rec.bottomLeft.y * 75-75/2, rec.bottomLeft.x * 75-75/2 )
-            console.log(rec.bottomLeft.y * 75, rec.bottomLeft.x * 75)
          }
     }
 }

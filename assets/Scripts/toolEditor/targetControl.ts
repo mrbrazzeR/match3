@@ -24,18 +24,18 @@ export default class targetControl extends cc.Component {
 
     idTarget: number;
     id: number;
-    idAvaiable = [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 25, 26, 27, 28, 29, 37, 38, 39,40,41,42]
+    idAvaiable = [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 25, 26, 27, 28, 29, 37, 38, 39, 40, 41, 42]
 
     protected onLoad(): void {
         cc.systemEvent.on('TARGETCHOOSE', this.chooseTarget, this)
     }
 
-    setView(id:number){
-        this.idTarget=id;
+    setView(id: number) {
+        this.idTarget = id;
         for (let i = 0; i < this.idAvaiable.length; i++) {
             let tileSet = cc.instantiate(this.tile);
             tileSet.getComponent(cc.Sprite).spriteFrame = this.frames[i];
-            tileSet.getComponent(targetBlock).set(this.idAvaiable[i],id);
+            tileSet.getComponent(targetBlock).set(this.idAvaiable[i], id);
             tileSet.parent = this.scrollRect;
             let row = i % 10;
             let col = Math.floor(i / 10);
@@ -59,8 +59,18 @@ export default class targetControl extends cc.Component {
         this.scrollRect.active = !this.scrollRect.active;
     }
 
-    setData(){
-        cc.systemEvent.emit('SAVE',{idTarget:this.idTarget,id:this.id,count:this.count.string})
+    setData() {
+        cc.systemEvent.emit('SAVE', { idTarget: this.idTarget, id: this.id, count: this.count.string })
+    }
+    setExistId(idFrame: number,counting:number) {
+        for (let i = 0; i < this.idAvaiable.length; i++) {
+            if (idFrame == this.idAvaiable[i]) {
+                this.id = idFrame;
+                this.icon.spriteFrame = this.frames[i]
+                break;
+            }
+        }
+        this.count.string=counting.toString();
     }
 
 

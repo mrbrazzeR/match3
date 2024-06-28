@@ -56,5 +56,14 @@ export default class colorLimitControl extends cc.Component {
     enableScroll() {
         this.scrollRect.active = !this.scrollRect.active;
     }
+    setExistColor(idColor: number) {
+        for (let i = 0; i < this.idAvaiable.length; i++) {
+            if (idColor == this.idAvaiable[i]) {
+                this.id = idColor;
+                this.icon.spriteFrame = this.frames[i]
+                break;
+            }
+        }
+    }
 
 }

@@ -18,6 +18,25 @@ cc.Class({
         this.scoreValue = 0,
         this.starLevel = 0,
         this.passRate = -1
+        this.loadDataFromJson()
+    },
+    loadDataFromJson: function () {
+        cc.assetManager.loadBundle("Data", (err, bundle) => {
+            if (err) {
+                // reject("Failed to load data bundle: ${err}");
+                console.log("err")
+                return;
+            }
+            bundle.load("LevelData", cc.JsonAsset, (err, data) => {
+                if (err) {
+                    console.log("err")
+                }
+                else {
+                    console.log(data)
+                    this.cacheLevel = data.json
+                }
+            })
+        })
     },
     start: function() {
         this.judgeHasHair()
@@ -30,7 +49,7 @@ cc.Class({
         if(cc.director.container.currentLevel >= 300){
             this.starStandard = [10000, 20000, 30000]
         }else{
-            this.starStandard = newLevelResource[cc.director.container.currentLevel].scoreStandard
+            this.starStandard = this.cacheLevel[cc.director.container.currentLevel].scoreStandard
         }
 
         this.initStarView()
