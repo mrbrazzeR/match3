@@ -32,8 +32,8 @@ export default class levelNode extends cc.Component {
             GlobalEvent.ISDRAGGING = true;
         }, this);
         this.node.on(cc.Node.EventType.MOUSE_UP, function () {
-            this.endDragging();
-            GlobalEvent.ISDRAGGING = false;
+           this.endDragging();
+            GlobalEvent.ISDRAGGING= false;
         }, this);
         cc.systemEvent.on('CHANGENODE', this.changeNode, this);
         cc.systemEvent.on('REMOVENODE', this.removeNode, this);
@@ -41,10 +41,10 @@ export default class levelNode extends cc.Component {
     onTouchStart() {
         cc.systemEvent.emit('LEVELNODECLICK', { x: this._posX, y: this._posY });
     }
-    startDragging() {
+    startDragging(){
         cc.systemEvent.emit('STARTDRAGGING', { x: this._posX, y: this._posY });
     }
-    endDragging() {
+    endDragging(){
         cc.systemEvent.emit('ENDDRAGGING', { x: this._posX, y: this._posY });
     }
 
@@ -55,8 +55,9 @@ export default class levelNode extends cc.Component {
                 this.grass.active = !0;
                 this.grass.getComponent(cc.Sprite).spriteFrame = eventData.img;
             }
-            if (eventData.isBubble) {
-                this.bubble.active = eventData.isBubble
+            if(eventData.isBubble)
+            {
+                this.bubble.active=eventData.isBubble
             }
             if (!eventData.isGrass && !eventData.isBubble && eventData.isNormal) {
                 this.view.spriteFrame = eventData.img;
@@ -71,18 +72,6 @@ export default class levelNode extends cc.Component {
             this.bubble.active = !1;
             this.view.spriteFrame = eventData.frame;
         }
-    }
-
-    changeBaseFrame(frame: cc.SpriteFrame) {
-        this.view.spriteFrame = frame;
-        this.grass.active = !1;
-        this.bubble.active = !1;
-    }
-    changeBubbleFrame(isBubble: boolean) {
-        this.bubble.active = isBubble;
-    }
-    changeGrassFrame(isGrass: boolean) {
-        this.grass.active = isGrass
     }
 
 }

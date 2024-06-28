@@ -72,9 +72,9 @@ export default class blockDesign extends cc.Component {
                 } else if (e == 27) {
                     // Windmill type
                     this.initWindmill();
-                } else if (e == 28) {
+                } else if(e==28){
                     this.view.getComponent(cc.Sprite).spriteFrame = this.viewFrame[11];
-                }
+                } 
                 else if (e >= 29 && e <= 36) {
                     // Colorful cubes types
                     this.initColorfulCubes(1, e - 29);
@@ -93,7 +93,7 @@ export default class blockDesign extends cc.Component {
                 } else if (e == 41) {
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[13];
                 }
-                else if (e == 42) {
+                else if(e==42){
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[14];
                 }
                 else {
@@ -141,10 +141,6 @@ export default class blockDesign extends cc.Component {
     onTouchStart() {
         var sprite = this.view.getComponent(cc.Sprite).spriteFrame;
         cc.systemEvent.emit('BLOCKCLICK', { id: this._stoneType, img: sprite });
-    }
-
-    getFrame() {
-        return this.view.getComponent(cc.Sprite).spriteFrame;
     }
 
     // ... (các phương thức khác giữ nguyên)
