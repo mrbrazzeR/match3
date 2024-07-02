@@ -96,7 +96,14 @@ export default class blockDesign extends cc.Component {
                 else if(e==42){
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[14];
                 }
-                else {
+                else if(e==43){
+                    this.view.getComponent(cc.Sprite).spriteFrame = this.viewFrame[12];
+                }
+                else if(e==44){
+                    this.view.getComponent(cc.Sprite).spriteFrame = this.viewFrame[13];
+                }
+                else
+                 {
                     // Hinder view for other special types
                     this.view.getComponent(cc.Sprite).spriteFrame = this.hinderView[e - 20];
                 }

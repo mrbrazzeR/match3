@@ -90,7 +90,9 @@ export default class levelDesignTool extends cc.Component {
   cacheLevel: any[] = [];
   curLevel: number = 0;
   tempStep: number = 0;
-  jsonLevel:cc.JsonAsset=null;
+  jsonLevel: cc.JsonAsset = null;
+  tempBubbleGenerator: number = 0;
+  tempBalloonGenerator: number = 0;
   onLoad() {
     this.startPoint = { x: -1, y: -1 };
     cc.systemEvent.on('BLOCKCLICK', this.getBlock, this);
@@ -180,7 +182,17 @@ export default class levelDesignTool extends cc.Component {
             this.customBlockNodeList.splice(temp, 1)
           }
         }
-
+        //check is balloon generator
+        else if (this.matrix[x][y] == 43) {
+          this.tempBalloonGenerator--;
+        }
+        else if (this.matrix[x][y] == 44 && this.id == 38) {
+          return
+        }
+        //check is bubble generator
+        else if (this.matrix[x][y] == 44 && this.id != 38) {
+          this.tempBubbleGenerator--;
+        }
         if (this.id >= 0 && this.id <= 10) {
           //normal block
           this.matrix[x][y] = this.id;
@@ -207,6 +219,9 @@ export default class levelDesignTool extends cc.Component {
           this.grassMatrix[x][y] = 1;
         }
         else if (this.id == 38) {
+          if (this.tempBubbleGenerator > 0) {
+            return
+          }
           let pos = this.matrix[x][y];
           //bubble layer
           if (pos >= 0 && pos <= 7) {
@@ -305,7 +320,22 @@ export default class levelDesignTool extends cc.Component {
           this.matrix[eventData.x][eventData.y] = this.id;
           isNormal = true;
         }
-
+        else if (this.id == 43) {
+          //balloon generator
+          this.matrix[eventData.x][eventData.y] = this.id;
+          isNormal = true;
+          this.tempBalloonGenerator++;
+        }
+        else if (this.id == 44) {
+          //check is contain bubble 38
+          let countBubble = this.bubbleMatrix.flat().reduce((count, element) => count + (element == 1 ? 1 : 0), 0);
+          if (countBubble > 0) {
+            return
+          }
+          this.matrix[eventData.x][eventData.y] = this.id;
+          isNormal = true;
+          this.tempBubbleGenerator++;
+        }
         cc.systemEvent.emit('CHANGENODE', { x: eventData.x, y: eventData.y, img: this.frame, isGrass: isGrass, isBubble: isBubble, isNormal });
         break;
       case PHASE.REMOVE:
@@ -400,11 +430,14 @@ export default class levelDesignTool extends cc.Component {
   loadMatrix() {
     this.curLevel = +this.levelText.string
     let existLevel = this.cacheLevel[this.curLevel];
+    this.tempAvatar=0;
+    this.tempCan=0;
+    this.tempBalloonGenerator=0;
+    this.tempBubbleGenerator=0;
     //clear object instantiate
     this.removeObject();
     if (existLevel) {
       //exist level
-      console.log("load")
       let lv = JSON.parse(JSON.stringify(this.cacheLevel[this.curLevel]));
       this.matrix = lv.mapList;
       this.tempStep = lv.step;
@@ -426,6 +459,7 @@ export default class levelDesignTool extends cc.Component {
       this.renderTargetNode();
       this.renderColorNode();
       this.renderStepAndScore();
+      this.renderGeneratorCount();
     }
     else {
       //reset tile
@@ -543,12 +577,14 @@ export default class levelDesignTool extends cc.Component {
         cus.parent = this.levelMap;
         cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, element[2])
         this.customBlockNodeList.push(cus)
+        this.tempAvatar++;
       }
       else {
         let cus = cc.instantiate(this.customCan);
         cus.parent = this.levelMap;
         cus.getComponent(customBlockDesign).comfirmBearWidthAndHeight(rec, element[2])
         this.customBlockNodeList.push(cus)
+        this.tempCan+=9
       }
     });
   }
@@ -577,6 +613,10 @@ export default class levelDesignTool extends cc.Component {
       this.scoreStandard[i].string = this.score[i].toString();
     }
     this.step.string = this.tempStep.toString()
+  }
+  renderGeneratorCount(){
+   this.tempBubbleGenerator = this.matrix.flat().reduce((count, element) => count + (element == 44 ? 1 : 0), 0);
+   this.tempBalloonGenerator=this.matrix.flat().reduce((count, element) => count + (element == 43 ? 1 : 0), 0)
   }
   testMatrix() {
     let index = 1;
@@ -621,6 +661,24 @@ export default class levelDesignTool extends cc.Component {
         this.targetList[index][1] = this.tempCan
       } else {
         this.targetList.push([41, this.tempCan])
+      }
+    }
+    //bubble generator
+    if (this.tempBubbleGenerator > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 38);
+      if (index !== -1) {
+        this.targetList[index][1] = 0
+      } else {
+        this.targetList.push([38, 0])
+      }
+    }
+    //balloon generator
+    if (this.tempBalloonGenerator > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 21);
+      if (index !== -1) {
+
+      } else {
+        this.targetList.push([21, 0])
       }
     }
     this.tempStep = +this.step.string;
@@ -684,6 +742,24 @@ export default class levelDesignTool extends cc.Component {
         this.targetList.push([41, this.tempCan])
       }
     }
+     //bubble generator
+     if (this.tempBubbleGenerator > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 38);
+      if (index !== -1) {
+        this.targetList[index][1] = 0
+      } else {
+        this.targetList.push([38, 0])
+      }
+    }
+    //balloon generator
+    if (this.tempBalloonGenerator > 0) {
+      let index = this.targetList.findIndex(item => item[0] === 21);
+      if (index !== -1) {
+
+      } else {
+        this.targetList.push([21, 0])
+      }
+    }
     this.tempStep = +this.step.string;
     let obj = {
       mapList: this.matrix,
@@ -698,8 +774,8 @@ export default class levelDesignTool extends cc.Component {
     }
     this.cacheLevel[this.curLevel] = obj;
   }
-  removeMatrix(){
-    this.cacheLevel.splice(this.curLevel,1);
+  removeMatrix() {
+    this.cacheLevel.splice(this.curLevel, 1);
     this.matrix = Array(9).fill(null).map(() => Array(9).fill(-2));
     this.grassMatrix = Array(9).fill(null).map(() => Array(9).fill(-2));
     this.bubbleMatrix = Array(9).fill(null).map(() => Array(9).fill(-2));
@@ -720,7 +796,7 @@ export default class levelDesignTool extends cc.Component {
     let modifiedString = removedBackslashesString.replaceAll("custom_avarta", "'custom_avarta'");
     modifiedString = modifiedString.replaceAll("custom_can", "'custom_can'")
     this.tempLevel = modifiedString;
-    this.jsonLevel.json=modifiedString;
+    this.jsonLevel.json = modifiedString;
     let a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([this.jsonLevel.json], { type: 'application/json' }));
     a.download = 'data.json';
@@ -729,14 +805,15 @@ export default class levelDesignTool extends cc.Component {
   }
   findLargestRectangles(matrix: number[][], id: number): Rectangle[] {
     const rectangles: Rectangle[] = [];
-    const rows = matrix.length;
-    const cols = matrix[0].length;
+    const newMatrix=JSON.parse(JSON.stringify(matrix));
+    const rows = newMatrix.length;
+    const cols = newMatrix[0].length;
 
     // Kiểm tra xem từ điểm (i, j) có thể tạo hình chữ nhật không
     const canFormRectangle = (i: number, j: number, k: number, l: number): boolean => {
       for (let m = i; m <= k; m++) {
         for (let n = j; n <= l; n++) {
-          if (matrix[m][n] != id) {
+          if (newMatrix[m][n] != id) {
             return false;
           }
         }
@@ -747,7 +824,7 @@ export default class levelDesignTool extends cc.Component {
     // Duyệt qua ma trận để tìm các hình chữ nhật lớn nhất
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        if (matrix[i][j] == id) {
+        if (newMatrix[i][j] == id) {
           let maxK = i, maxL = j;
           // Tìm hình chữ nhật lớn nhất có thể từ điểm (i, j)
           for (let k = i; k < rows; k++) {
@@ -763,7 +840,7 @@ export default class levelDesignTool extends cc.Component {
           // Đánh dấu các ô đã được sử dụng trong hình chữ nhật lớn nhất
           for (let m = i; m <= maxK; m++) {
             for (let n = j; n <= maxL; n++) {
-              matrix[m][n] = -2; // Cập nhật giá trị để tránh tìm lại
+              newMatrix[m][n] = -2; // Cập nhật giá trị để tránh tìm lại
             }
           }
         }
@@ -836,12 +913,12 @@ export default class levelDesignTool extends cc.Component {
       }
       bundle.load("LevelData", cc.JsonAsset, (err, data: cc.JsonAsset) => {
         if (err) {
-            console.log("err")
+          console.log("err")
         }
         else {
           console.log(data)
-          this.cacheLevel=data.json
-          this.jsonLevel=data;
+          this.cacheLevel = data.json
+          this.jsonLevel = data;
         }
       })
     })
